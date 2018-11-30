@@ -5,33 +5,38 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class MainServer {
+public class MainServer implements Runnable {
 
-    public static void main(String[] args) {
+    private final Socket s;
 
+    public MainServer(Socket s) {
+        this.s = s;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        ServerSocket ss = new ServerSocket(1234);
+        while(true) {
+            Socket s = ss.accept();
+            new Thread(new MainServer(s)).start();
+        }
+    }
+
+
+    public void run() {
         try {
-            ServerSocket ss = new ServerSocket(1234); //tem de ser maior de 1024
+            PrintWriter wr = new PrintWriter(s.getOutputStream());
+            BufferedReader rd = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
             while(true) {
-                try {
-                    Socket cs = ss.accept();
-                    System.out.println("Cliente ligado");
+                String input = rd.readLine();
+                if(input == null) break;
 
-                    PrintWriter pw = new PrintWriter(cs.getOutputStream());
-                    BufferedReader br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
-                    while(true) {
-                        String line = br.readLine();
-                        if (line == null) break;
-                        System.out.println("Recebeu: " + line);
-                    }
-                    pw.print("Olá");
-                    pw.flush();
-                    pw.close();
-                    cs.close();
-                } catch (IOException e) { }
+                String[] cmds = input.split(" ");
+                System.out.println("Recebeu " + cmds.length + " palavras.");
             }
         } catch (IOException e) {
-            System.out.println("IOException");
+            e.printStackTrace();
         }
     }
 
