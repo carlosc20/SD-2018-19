@@ -3,9 +3,10 @@ import java.util.Map;
 
 public class Manager {
 
-    private Map<String, User> users;
-    private List<Reservation> reservations;
-    private Map<String, Server> servers;
+    private Map<String, User> users; // chave email
+    private List<Reservation> reservations; // index id
+    private Map<String, ServerType> servers; // chave id
+
 
     void registerUser(String email, String password) throws Exception {
 
@@ -15,7 +16,9 @@ public class Manager {
         users.put(email, new User(email, password));
     }
 
-
+    /**
+     * super seguro
+     */
     boolean authenticateUser(String email, String password) throws Exception {
 
         User user = users.get(email);

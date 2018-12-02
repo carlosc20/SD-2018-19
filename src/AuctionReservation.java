@@ -4,7 +4,7 @@ public class AuctionReservation extends Reservation {
 
     private int bid;
 
-    public AuctionReservation(String user, Server server, LocalDateTime start) {
-        super(user, server, start);
+    public AuctionReservation(String user, ServerType serverType, LocalDateTime start) {
+        super(user, serverType, start);
     }
 }

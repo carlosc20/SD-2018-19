@@ -34,6 +34,8 @@ public class MainServer implements Runnable {
 
                 String[] cmds = input.split(" ");
                 System.out.println("Recebeu " + cmds.length + " palavras.");
+                wr.println("Recebeu " + cmds.length + " palavras.");
+                wr.flush();
 
 
             }

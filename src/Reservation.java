@@ -3,13 +3,13 @@ import java.time.LocalDateTime;
 public abstract class Reservation {
 
     private final String userEmail;
-    private final Server server;
+    private final ServerType serverType;
     private final LocalDateTime startTime;
-    private LocalDateTime endTime; //pode ser null
+    private LocalDateTime endTime; // é null ao ser criado
 
-    public Reservation(String userEmail, Server server, LocalDateTime startTime) {
+    public Reservation(String userEmail, ServerType serverType, LocalDateTime startTime) {
         this.userEmail = userEmail;
-        this.server = server;
+        this.serverType = serverType;
         this.startTime = startTime;
     }
 }

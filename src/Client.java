@@ -7,12 +7,7 @@ import java.util.Scanner;
 
 public class Client implements Runnable{
 
-    public Client() {
-
-    }
-
     public static void main(String[] args) {
-        new Thread(new Client()).start();
         new Thread(new Client()).start();
     }
 
@@ -29,15 +24,12 @@ public class Client implements Runnable{
                 if(input == null) break;
                 wr.println(input);
                 wr.flush();
+                System.out.println(rd.readLine());
             }
             scanner.close();
-            //System.out.println(rd.readLine());
-
             s.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
     }
-
-
 }
