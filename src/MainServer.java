@@ -33,10 +33,19 @@ public class MainServer implements Runnable {
                 if(input == null) break;
 
                 String[] cmds = input.split(" ");
-                System.out.println("Recebeu " + cmds.length + " palavras.");
-                wr.println("Recebeu " + cmds.length + " palavras.");
-                wr.flush();
-
+                switch(cmds[0]) {
+                    case "registar":
+                        wr.println("Registado " + cmds[1]);
+                        wr.flush();
+                        break;
+                    case "entrar":
+                        wr.println("Entrou " + cmds[1]);
+                        wr.flush();
+                        break;
+                    default:
+                        wr.println("Comando não reconhecido.");
+                        wr.flush();
+                }
 
             }
         } catch (IOException e) {
