@@ -1,34 +1,52 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Manager {
+    private static Manager ourInstance = new Manager();
+    public static Manager getInstance() {
+        return ourInstance;
+    }
 
     private Map<String, User> users; // chave email
     private List<Reservation> reservations; // index id
     private Map<String, ServerType> servers; // chave id
 
+    public Manager() {
+        this.users = new HashMap<>();
+        this.reservations = new ArrayList<>();
+        this.servers = new HashMap<>();
+    }
 
-    void registerUser(String email, String password) throws Exception {
+    /**
+     * Regista um utilizador.
+     *
+     * @param email Email do novo utilizador
+     * @param password Password do novo utilizador.
+     */
+    void registerUser(String email, String password) throws EmailJaExiste {
 
         if (users.containsKey(email))
-            throw new Exception();
+            throw new EmailJaExiste(email);
 
         users.put(email, new User(email, password));
     }
 
     /**
-     * super seguro
+     * autentica um utilizador.
+     *
+     * @param email Email do utilizador
+     * @param password Password do utilizador.
      */
-    boolean authenticateUser(String email, String password) throws Exception {
+    void authenticateUser(String email, String password) throws EmailNaoExiste, SenhaErrada {
 
         User user = users.get(email);
-        if (user == null) throw new Exception(); // ?
-
-        boolean check = false;
-        if (user.getPassword().equals(password))
-            check = true;
-
-        return check;
+        if (user == null) throw new EmailNaoExiste(email);
+        if (!user.getPassword().equals(password)) throw new SenhaErrada(email);
+        /*
+            Código que guarda a sessão do utilizador
+         */
     }
 
 
