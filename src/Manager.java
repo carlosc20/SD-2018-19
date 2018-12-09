@@ -1,3 +1,4 @@
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +8,9 @@ public class Manager {
     private List<Reservation> reservations; // index id
     private Map<String, ServerType> servers; // chave id
 
+    public Manager(Map<String, ServerType> servers) {
+        this.servers = servers;
+    }
 
     void registerUser(String email, String password) throws Exception {
 
@@ -17,54 +21,93 @@ public class Manager {
     }
 
     /**
-     * super seguro
+     * Verifica credenciais de um utilizador.
+     *
+     * @return true se as credenciais se verificarem.
      */
     boolean authenticateUser(String email, String password) throws Exception {
 
         User user = users.get(email);
         if (user == null) throw new Exception(); // ?
 
-        boolean check = false;
+        boolean isValid = false;
         if (user.getPassword().equals(password))
-            check = true;
+            isValid = true;
 
-        return check;
+        return isValid;
     }
 
 
     /**
      * Reserva servidor de um tipo a pedido.
      *
-     * @param email Email do utilizador que faz a reserva
-     * @param serverType Tipo do servidor.
      * @return Id da reserva.
+     */
+    // request, on demand, a pedido
+    /*
+    ve servidores do tipo disponiveis
+    ve reservas de leilao e cancela
      */
     int createStandardReservation(String email, String serverType) {
 
-        return 0;
+        ServerType st = servers.get(serverType);
+        StandardReservation res = new StandardReservation(email, st, LocalDateTime.now());
+
+
+
+        return res.getId();
     }
 
 
     /**
-     * Reserva servidor de um tipo em leilao.
+     * Reserva servidor de um tipo em leilão.
      *
-     * @param email Email do utilizador que faz a reserva
-     * @param serverType Tipo do servidor.
-     * @param offer Preço pretendido.
      * @return Id da reserva.
     */
+    /*
+    Ve se tem livres do tipo
+    ve se tem reservas de leilao mais baratas e cancela
+    fica em espera
+     */
     int createAuctionReservation(String email, String serverType, int offer) {
         return 0;
     }
 
+    /**
+     * Cancela uma reserva
+     *
+     * @param id Id da reserva.
+     */
+    void cancelReservation(String email, int id) throws Exception {
 
-    void cancelReservation(String email, int id) {
+        Reservation res = reservations.get(id);
+        if(res == null) throw new Exception();
 
+        User user = users.get(email);
+        user.cancelRes(id);
+
+        res.getServerType().cancelRes(id);
     }
 
-
+    /**
+     * Calcula o valor em dívida atual.
+     * Este valor é calculado a partir da soma dos valores de todas as reservas canceladas e dos valores
+     * acumulados até ao momento das reservas atuais.
+     *
+     * @return Dívida total acumulada em cêntimos.
+     */
     int checkDebt(String email){
-        return 0;
+
+        int totalDue = 0;
+
+        List<Reservation> resList = users.get(email).getCanceledRes();
+        for (Reservation res : resList) {
+            totalDue += res.getAmountDue();
+        }
+
+        // TODO: calcular o total das reservas atuais
+
+        return totalDue;
     }
 
 }
