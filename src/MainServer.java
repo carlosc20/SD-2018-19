@@ -32,12 +32,45 @@ public class MainServer implements Runnable {
                 String input = rd.readLine();
                 if(input == null) break;
 
-                String[] cmds = input.split(" ");
-                System.out.println("Recebeu " + cmds.length + " palavras.");
-                wr.println("Recebeu " + cmds.length + " palavras.");
-                wr.flush();
-
-
+                String[] cmds = input.split(" ",2);
+                try {
+                    switch (cmds[0].toLowerCase()) {
+                        case "registar": {
+                                if(cmds.length < 2) {
+                                    throw new NumeroArgumentosInsuficiente(2);
+                                }
+                                String[] args = cmds[1].split(" ", 2);
+                                if (args.length < 2) {
+                                    throw new NumeroArgumentosInsuficiente(2);
+                                }
+                                String email = args[0];
+                                String password = args[1];
+                                Manager.getInstance().registerUser(email, password);
+                                wr.println("Sucesso: Registado " + email);
+                            }
+                            break;
+                        case "entrar": {
+                                if(cmds.length < 2) {
+                                    throw new NumeroArgumentosInsuficiente(2);
+                                }
+                                String[] args = cmds[1].split(" ", 2);
+                                if (args.length < 2) {
+                                    throw new NumeroArgumentosInsuficiente(2);
+                                }
+                                String email = args[0];
+                                String password = args[1];
+                                Manager.getInstance().authenticateUser(email, password);
+                                wr.println("Sucesso: Entrou " + email);
+                            }
+                            break;
+                        default:
+                            throw new ComandoNaoExiste(cmds[0]);
+                    }
+                } catch (Exception e) {
+                    wr.println("Erro: " + e.getClass().getName() + " " + e.getMessage());
+                } finally {
+                    wr.flush();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

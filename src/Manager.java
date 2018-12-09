@@ -1,21 +1,37 @@
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Manager {
+    private static Manager ourInstance = new Manager();
+    public static Manager getInstance() {
+        return ourInstance;
+    }
 
     private Map<String, User> users; // chave email
     private List<Reservation> reservations; // index id
     private Map<String, ServerType> servers; // chave id
 
-    public Manager(Map<String, ServerType> servers) {
-        this.servers = servers;
+
+    public Manager() {
+        this.users = new HashMap<>();
+        this.reservations = new ArrayList<>();
+        this.servers = new HashMap<>(); //TODO: criar configuracao inicial
     }
 
-    void registerUser(String email, String password) throws Exception {
+    /**
+     * Regista um utilizador.
+     *
+     * @param email Email do novo utilizador
+     * @param password Password do novo utilizador.
+     */
+    void registerUser(String email, String password) throws EmailJaExiste {
 
         if (users.containsKey(email))
-            throw new Exception();
+            throw new EmailJaExiste(email);
 
         users.put(email, new User(email, password));
     }
@@ -25,10 +41,10 @@ public class Manager {
      *
      * @return true se as credenciais se verificarem.
      */
-    boolean authenticateUser(String email, String password) throws Exception {
+    boolean checkCredentials(String email, String password) throws EmailNaoExiste {
 
         User user = users.get(email);
-        if (user == null) throw new Exception(); // ?
+        if (user == null) throw new EmailNaoExiste(email);
 
         boolean isValid = false;
         if (user.getPassword().equals(password))
