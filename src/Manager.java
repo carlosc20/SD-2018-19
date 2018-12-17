@@ -1,25 +1,28 @@
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Manager {
-    private static Manager ourInstance = new Manager();
-    public static Manager getInstance() {
-        return ourInstance;
-    }
 
-    private Map<String, User> users; // chave email
-    private List<Reservation> reservations; // index id
+    private static Manager ourInstance = new Manager();
+
+    private Map<String, User> users;         // chave email
     private Map<String, ServerType> servers; // chave id
+    private List<Reservation> reservations;  // index id
 
 
     public Manager() {
         this.users = new HashMap<>();
         this.reservations = new ArrayList<>();
-        this.servers = new HashMap<>(); //TODO: criar configuracao inicial
+        this.servers = new HashMap<>();
+        servers.put("t3.micro", new ServerType("t3.micro", 300, 5));
+        servers.put("t3.large", new ServerType("t3.large", 600, 3));
+        servers.put("m5.micro", new ServerType("m5.micro", 500, 1));
+    }
+
+    public static Manager getInstance() {
+        return ourInstance;
     }
 
     /**
@@ -28,23 +31,24 @@ public class Manager {
      * @param email Email do novo utilizador
      * @param password Password do novo utilizador.
      */
-    void registerUser(String email, String password) throws EmailJaExiste {
+    synchronized void registerUser(String email, String password) throws EmailJaExisteException {
 
         if (users.containsKey(email))
-            throw new EmailJaExiste(email);
+            throw new EmailJaExisteException(email);
 
         users.put(email, new User(email, password));
     }
+
 
     /**
      * Verifica credenciais de um utilizador.
      *
      * @return true se as credenciais se verificarem.
      */
-    boolean checkCredentials(String email, String password) throws EmailNaoExiste {
+    boolean checkCredentials(String email, String password) throws EmailNaoExisteException {
 
         User user = users.get(email);
-        if (user == null) throw new EmailNaoExiste(email);
+        if (user == null) throw new EmailNaoExisteException(email);
 
         boolean isValid = false;
         if (user.getPassword().equals(password))
@@ -59,17 +63,13 @@ public class Manager {
      *
      * @return Id da reserva.
      */
-    // request, on demand, a pedido
-    /*
-    ve servidores do tipo disponiveis
-    ve reservas de leilao e cancela
-     */
     int createStandardReservation(String email, String serverType) {
 
+        // TODO: acabar
+
         ServerType st = servers.get(serverType);
-        StandardReservation res = new StandardReservation(email, st, LocalDateTime.now());
-
-
+        StandardReservation res = st.addStandardRes(email);
+        reservations.add(res);
 
         return res.getId();
     }
@@ -80,14 +80,17 @@ public class Manager {
      *
      * @return Id da reserva.
     */
-    /*
-    Ve se tem livres do tipo
-    ve se tem reservas de leilao mais baratas e cancela
-    fica em espera
-     */
-    int createAuctionReservation(String email, String serverType, int offer) {
-        return 0;
+    int createAuctionReservation(String email, String serverType, int bid) {
+
+        // TODO: acabar
+
+        ServerType st = servers.get(serverType);
+        AuctionReservation res = st.addAuctionRes(email, bid);
+        reservations.add(res);
+
+        return res.getId();
     }
+
 
     /**
      * Cancela uma reserva
@@ -99,11 +102,11 @@ public class Manager {
         Reservation res = reservations.get(id);
         if(res == null) throw new Exception();
 
-        User user = users.get(email);
-        user.cancelRes(id);
-
+        res.cancel();
         res.getServerType().cancelRes(id);
+        users.get(email).cancelRes(id);
     }
+
 
     /**
      * Calcula o valor em dívida atual.
@@ -114,16 +117,8 @@ public class Manager {
      */
     int checkDebt(String email){
 
-        int totalDue = 0;
-
-        List<Reservation> resList = users.get(email).getCanceledRes();
-        for (Reservation res : resList) {
-            totalDue += res.getAmountDue();
-        }
-
-        // TODO: calcular o total das reservas atuais
-
-        return totalDue;
+        // TODO: concorrencia
+        return users.get(email).getTotalDue();
     }
 
 }

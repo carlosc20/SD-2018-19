@@ -8,12 +8,15 @@ import java.net.Socket;
 public class MainServer implements Runnable {
 
     private final Socket s;
+    private static Manager man;
 
     public MainServer(Socket s) {
         this.s = s;
     }
 
     public static void main(String[] args) throws Exception {
+
+        man = new Manager();
 
         ServerSocket ss = new ServerSocket(1234);
         while(true) {
@@ -59,12 +62,13 @@ public class MainServer implements Runnable {
                                 }
                                 String email = args[0];
                                 String password = args[1];
-                                Manager.getInstance().authenticateUser(email, password);
-                                wr.println("Sucesso: Entrou " + email);
+                                if (Manager.getInstance().checkCredentials(email, password))
+                                    wr.println("Sucesso: Entrou " + email);
+                                else wr.println("Credenciais incorretas.");
                             }
                             break;
                         default:
-                            throw new ComandoNaoExiste(cmds[0]);
+                            wr.println("Comando não existe.");
                     }
                 } catch (Exception e) {
                     wr.println("Erro: " + e.getClass().getName() + " " + e.getMessage());
