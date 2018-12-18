@@ -1,29 +1,30 @@
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+/**
+ *  Facade da lógica
+ */
 public class Manager {
 
     private static Manager ourInstance = new Manager();
 
     private Map<String, User> users;         // chave email
     private Map<String, ServerType> servers; // chave id
-    private List<Reservation> reservations;  // index id
 
 
     public Manager() {
         this.users = new HashMap<>();
-        this.reservations = new ArrayList<>();
         this.servers = new HashMap<>();
-        servers.put("t3.micro", new ServerType("t3.micro", 300, 5));
-        servers.put("t3.large", new ServerType("t3.large", 600, 3));
-        servers.put("m5.micro", new ServerType("m5.micro", 500, 1));
+        // Exemplo:
+        servers.put("t3.micro", new ServerType(300, 5));
+        servers.put("t3.large", new ServerType(600, 3));
+        servers.put("m5.micro", new ServerType(500, 1));
     }
 
     public static Manager getInstance() {
         return ourInstance;
     }
+
 
     /**
      * Regista um utilizador.
@@ -36,7 +37,7 @@ public class Manager {
         if (users.containsKey(email))
             throw new EmailJaExisteException(email);
 
-        users.put(email, new User(email, password));
+        users.put(email, new User(password));
     }
 
 
@@ -68,8 +69,8 @@ public class Manager {
         // TODO: acabar
 
         ServerType st = servers.get(serverType);
-        StandardReservation res = st.addStandardRes(email);
-        reservations.add(res);
+        StandardReservation res = st.addStandardRes();
+        users.get(email).addReservation(res);
 
         return res.getId();
     }
@@ -85,8 +86,8 @@ public class Manager {
         // TODO: acabar
 
         ServerType st = servers.get(serverType);
-        AuctionReservation res = st.addAuctionRes(email, bid);
-        reservations.add(res);
+        AuctionReservation res = st.addAuctionRes(bid);
+        users.get(email).addReservation(res);
 
         return res.getId();
     }
@@ -98,12 +99,6 @@ public class Manager {
      * @param id Id da reserva.
      */
     void cancelReservation(String email, int id) throws Exception {
-
-        Reservation res = reservations.get(id);
-        if(res == null) throw new Exception();
-
-        res.cancel();
-        res.getServerType().cancelRes(id);
         users.get(email).cancelRes(id);
     }
 

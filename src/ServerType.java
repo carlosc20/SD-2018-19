@@ -1,35 +1,38 @@
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ *  Representa um conjunto de servidores do mesmo tipo
+ */
 public class ServerType {
 
-    private final String id;    // Identificador
-    private final int price;    // Preço por hora
-    private final int total;    // Número máximo de instâncias disponíveis
+    private final int price;    // Preço fixo por hora
+    private final int total;    // Número fixo máximo de instâncias disponíveis
 
-    private int standardRes;
-    private int auctionRes;
-    private Map<Integer, Reservation> reservations;
+    private int standardRes;    // Número de instâncias ocupadas com reservas standard
+    private int auctionRes;     // Número de instâncias ocupadas com reservas de lailão
+    private Map<Integer, Reservation> reservations; //chave id
 
-    public ServerType(String id, int price, int total) {
-        this.id = id;
+
+    public ServerType(int price, int total) {
         this.price = price;
         this.total = total;
     }
 
-    // TODO: criar fila de espera(uma para cada tipo?) e concorrencia, tipo warehouse?
 
+    // TODO: criar fila de espera(uma para cada tipo?) e concorrencia
 
     public int getPrice() {
         return price;
     }
 
+
     /**
      *
      */
-    public AuctionReservation addAuctionRes(String email, int bid) {
+    public AuctionReservation addAuctionRes(int bid) {
 
-        AuctionReservation res = new AuctionReservation(email, this, LocalDateTime.now(), bid);
+        AuctionReservation res = new AuctionReservation(this, LocalDateTime.now(), bid);
 
         if(standardRes == total) {                      // cheio
             // TODO: vai para fila
@@ -48,9 +51,9 @@ public class ServerType {
     /**
      *
      */
-    public StandardReservation addStandardRes(String email) {
+    public StandardReservation addStandardRes() {
 
-        StandardReservation res = new StandardReservation(email, this, LocalDateTime.now());
+        StandardReservation res = new StandardReservation(this, LocalDateTime.now());
 
         if(standardRes == total) {                      // cheio
             // TODO: vai para fila
@@ -67,6 +70,10 @@ public class ServerType {
         return res;
     }
 
+
+    /**
+     *
+     */
     public void cancelRes(int id) {
         Reservation res = reservations.get(id);
         if (res instanceof StandardReservation)

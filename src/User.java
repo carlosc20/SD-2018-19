@@ -5,13 +5,11 @@ import java.util.Map;
 
 public class User {
 
-    private final String email;
     private final String password;
     private Map<Integer, Reservation> currentRes;
     private List<Reservation> canceledRes;
 
-    public User(String email, String password) {
-        this.email = email;
+    public User(String password) {
         this.password = password;
         this.currentRes = new HashMap<>();
         this.canceledRes = new ArrayList<>();
@@ -24,7 +22,7 @@ public class User {
     /**
      *  Calcula o total devido atual de reservas de servidores.
      *
-     *  @return Total devido em cêntimos
+     *  @return Total devido em cêntimos.
      */
     public int getTotalDue() {
         int total = 0;
@@ -43,8 +41,22 @@ public class User {
     /**
      * Passa uma reserva da lista de atuais para as canceladas.
      *
+     * @return Reserva que foi cancelada.
      */
-    public void cancelRes(int id) {
-        canceledRes.add(currentRes.remove(id));
+    public void cancelRes(int id) throws Exception {
+        Reservation res = currentRes.remove(id);
+        if(res == null) throw new Exception();
+        canceledRes.add(res);
+        res.getServerType().cancelRes(id);
+        res.cancel();
+    }
+
+
+    /**
+     * Adiciona uma reserva ao utilizador.
+     *
+     */
+    public void addReservation(Reservation res) {
+        currentRes.put(res.getId(), res);
     }
 }
