@@ -1,6 +1,8 @@
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Thread.sleep;
+
 /**
  *  Facade da lógica
  */
@@ -32,7 +34,7 @@ public class Manager {
      * @param email Email do novo utilizador
      * @param password Password do novo utilizador.
      */
-    synchronized void registerUser(String email, String password) throws EmailJaExisteException {
+    synchronized void  registerUser(String email, String password) throws EmailJaExisteException {
 
         if (users.containsKey(email))
             throw new EmailJaExisteException(email);
@@ -60,7 +62,7 @@ public class Manager {
 
 
     /**
-     * Reserva servidor de um tipo a pedido.
+     * Cria reserva standard de um servidor de um tipo.
      *
      * @return Id da reserva.
      */
@@ -77,7 +79,7 @@ public class Manager {
 
 
     /**
-     * Reserva servidor de um tipo em leilão.
+     * Cria reserva de leilão de um servidor de um tipo.
      *
      * @return Id da reserva.
     */
@@ -110,7 +112,7 @@ public class Manager {
      *
      * @return Dívida total acumulada em cêntimos.
      */
-    int checkDebt(String email){
+    int getTotalDue(String email){
 
         // TODO: concorrencia
         return users.get(email).getTotalDue();
