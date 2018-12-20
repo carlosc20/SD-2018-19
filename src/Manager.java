@@ -68,11 +68,10 @@ public class Manager {
      */
     int createStandardReservation(String email, String serverType) {
 
-        // TODO: acabar
-
         ServerType st = servers.get(serverType);
-        StandardReservation res = st.addStandardRes();
-        users.get(email).addReservation(res);
+        User user = users.get(email);
+        StandardReservation res = st.addStandardRes(user); // espera até ser atribuída
+        user.addReservation(res);
 
         return res.getId();
     }
@@ -85,11 +84,10 @@ public class Manager {
     */
     int createAuctionReservation(String email, String serverType, int bid) {
 
-        // TODO: acabar
-
         ServerType st = servers.get(serverType);
-        AuctionReservation res = st.addAuctionRes(bid);
-        users.get(email).addReservation(res);
+        User user = users.get(email);
+        AuctionReservation res = st.addAuctionRes(user, bid); // espera até ser atribuída
+        user.addReservation(res);
 
         return res.getId();
     }
@@ -101,7 +99,8 @@ public class Manager {
      * @param id Id da reserva.
      */
     void cancelReservation(String email, int id) throws Exception {
-        users.get(email).cancelRes(id);
+        Reservation res = users.get(email).getCurrentRes(id);
+        res.cancel();
     }
 
 

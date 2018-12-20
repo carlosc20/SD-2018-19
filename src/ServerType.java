@@ -1,7 +1,6 @@
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.TreeSet;
 
 /**
  *  Representa um conjunto de servidores do mesmo tipo
@@ -11,22 +10,20 @@ public class ServerType {
     private final int price;    // Preço fixo por hora
     private final int total;    // Número fixo máximo de instâncias disponíveis
 
-    private Map<Integer, Reservation> reservations; //chave id
+    private TreeSet<AuctionReservation> auctionResSet;
 
     private int standardRes;    // Número de instâncias ocupadas com reservas standard
     private int auctionRes;     // Número de instâncias ocupadas com reservas de leilão
-    private PriorityQueue<Reservation> queue;
+    private PriorityQueue<Reservation> queue;   // Fila de espera de reservas
 
 
     public ServerType(int price, int total) {
         this.price = price;
         this.total = total;
-        reservations = new HashMap<>();
-        queue = new PriorityQueue<>(); // passar comparador
+        auctionResSet = new TreeSet<>();
+        queue = new PriorityQueue<>();
     }
 
-
-    // TODO: criar fila de espera(uma para cada tipo?) e concorrencia
 
     public int getPrice() {
         return price;
@@ -36,19 +33,26 @@ public class ServerType {
     /**
      *
      */
-    public AuctionReservation addAuctionRes(int bid) {
+    public synchronized AuctionReservation addAuctionRes(User user, int bid) {
 
-        AuctionReservation res = new AuctionReservation(this, LocalDateTime.now(), bid);
+        AuctionReservation res = new AuctionReservation(this, user, bid);
 
-        if(standardRes == total) {                      // cheio
-            queue.add(res);
-        } else if (standardRes + auctionRes == total) { // cheio mas tem reservas de leilao
-            // TODO: substitui o mais barato se possível, senao vai para fila
-            reservations.put(res.getId(), res);
-        } else {                                        // tem servidores livres
-            reservations.put(res.getId(), res);
-            auctionRes++;
-        }
+        if(standardRes == total) {                                   // cheio, vai para fila
+            addToQueue(res);
+        } else if (standardRes + auctionRes == total) {             // cheio mas tem reservas de leilao
+            AuctionReservation low = auctionResSet.last();
+            if(low.getPrice() < res.getPrice()) {                   // se for melhor que a pior reserva de leilao, remove essa
+                low.cancel();
+                auctionRes--;
+            } else {                                                //senao vai para fila
+                addToQueue(res);
+            }
+        }                                                           // else tem servidores livres
+
+        // adiciona
+        res.setStartTime(LocalDateTime.now());
+        auctionResSet.add(res);
+        auctionRes++;
 
         return res;
     }
@@ -57,38 +61,51 @@ public class ServerType {
     /**
      *
      */
-    public StandardReservation addStandardRes() {
+    public synchronized StandardReservation addStandardRes(User user) {
 
-        StandardReservation res = new StandardReservation(this, LocalDateTime.now());
+        StandardReservation res = new StandardReservation(this, user);
 
-        if(standardRes == total) {                      // cheio
-            // TODO: vai para fila
-        } else if (standardRes + auctionRes == total) { // cheio mas tem reservas de leilao
-            // TODO: substitui o auction mais barato
-            reservations.put(res.getId(), res);
-            standardRes++;
+        if(standardRes == total) {                              // cheio, vai para fila
+            addToQueue(res);
+        } else if (standardRes + auctionRes == total) {         // cheio mas tem reservas de leilao
+            AuctionReservation low = auctionResSet.last();      // remove com menor licitacao
+            low.cancel();
             auctionRes--;
-        } else {                                        // tem servidores livres
-            reservations.put(res.getId(), res);
-            standardRes++;
-        }
+        }                                                       // else tem servidores livres
+
+        // adiciona
+        res.setStartTime(LocalDateTime.now());
+        standardRes++;
 
         return res;
     }
 
 
     /**
-     *
+     *  Adiciona uma reserva à fila de espera para ser atribuída a um servidor.
      */
-    public void cancelRes(int id) {
-        Reservation res = reservations.get(id);
-        if (res instanceof StandardReservation)
+    public void addToQueue(Reservation res) {
+        queue.add(res);
+        while (standardRes + auctionRes == total && queue.peek() == res) {
+            try {
+                wait();
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    /**
+     *  Remove a reserva da lista de reservas dos servidores libertando assim uma instância
+     */
+    public synchronized void cancelRes(Reservation res) {
+        if(res instanceof AuctionReservation) {
+            auctionResSet.remove(res);
+            auctionRes--;
+        } else {
             standardRes--;
-        else
-            auctionRes--;
-
-        reservations.remove(id);
-
-        // TODO: avisa que ha espaços livres
+        }
+        notifyAll();
     }
 }

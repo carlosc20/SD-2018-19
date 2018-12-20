@@ -43,20 +43,26 @@ public class User {
      *
      * @return Reserva que foi cancelada.
      */
-    public void cancelRes(int id) throws Exception {
-        Reservation res = currentRes.remove(id);
-        if(res == null) throw new Exception();
+    public void cancelRes(Reservation res) {
+        currentRes.remove(res.getId());
         canceledRes.add(res);
-        res.getServerType().cancelRes(id);
-        res.cancel();
     }
 
 
     /**
      * Adiciona uma reserva ao utilizador.
-     *
      */
     public void addReservation(Reservation res) {
         currentRes.put(res.getId(), res);
+    }
+
+
+    /**
+     * Devolve a reserva não cancelada correspondente ao id fornecido.
+     */
+    public Reservation getCurrentRes(int id) throws Exception {
+        Reservation res = currentRes.get(id);
+        if (res == null) throw new Exception();
+        return res;
     }
 }

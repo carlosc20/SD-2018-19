@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
  */
 public class StandardReservation extends Reservation {
 
-    public StandardReservation(ServerType serverType, LocalDateTime start) {
-        super(serverType, start);
+    public StandardReservation(ServerType serverType, User user) {
+        super(serverType, user);
     }
 
     @Override
