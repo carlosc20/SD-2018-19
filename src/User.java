@@ -2,12 +2,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class User {
 
     private final String password;
     private Map<Integer, Reservation> currentRes;
     private List<Reservation> canceledRes;
+    private ReentrantLock lock;
 
     public User(String password) {
         this.password = password;
@@ -24,6 +26,7 @@ public class User {
      *
      *  @return Total devido em cêntimos.
      */
+    /*
     public int getTotalDue() {
         int total = 0;
 
@@ -34,6 +37,27 @@ public class User {
             total += res.getCurrentAmountDue();
         }
 
+        return total;
+    }*/
+    synchronized public int getTotalDue() {
+        int total = 0;
+        List<Reservation> canceled = new ArrayList<>();
+        List<Reservation> ongoing = new ArrayList<>();
+
+        //Dar lock nas canceladas, acho que não é preciso !!
+        //Dá lock nas currentes para não permitir que sejam canceladas
+        for(Reservation res : currentRes.values()){
+            res.lock.lock();
+            ongoing.add(res);
+        }
+
+        for (Reservation res : canceledRes) {
+            total += res.getAmountDue();
+        }
+        for (Reservation res : ongoing) {
+            total += res.getCurrentAmountDue();
+            res.lock.unlock();
+        }
         return total;
     }
 

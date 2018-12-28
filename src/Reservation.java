@@ -1,4 +1,6 @@
 import java.time.LocalDateTime;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static java.lang.Math.toIntExact;
 import static java.time.temporal.ChronoUnit.HOURS;
 
@@ -12,6 +14,7 @@ public abstract class Reservation implements Comparable {
     private final ServerType serverType;
     private final User user;
     private LocalDateTime startTime;
+    public ReentrantLock lock; // por public, sinceramente até nem fica mal.
 
     private int amountDue;          // é 0 até ser cancelada a reserva
 
@@ -21,7 +24,6 @@ public abstract class Reservation implements Comparable {
         this.serverType = serverType;
         this.user =user;
     }
-
 
     public int getId() {
         return id;
