@@ -14,7 +14,7 @@ public class Manager {
     private Map<String, ServerType> servers; // chave id
 
 
-    public Manager() {
+    private Manager() {
         this.users = new HashMap<>();
         this.servers = new HashMap<>();
         // Exemplo:
@@ -66,10 +66,13 @@ public class Manager {
      *
      * @return Id da reserva.
      */
-    int createStandardReservation(String email, String serverType) {
+    int createStandardReservation(String email, String serverType) throws Exception {
 
         ServerType st = servers.get(serverType);
+        if(st == null) throw new Exception(); // TODO: dar nome
         User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
         StandardReservation res = st.addStandardRes(user); // espera até ser atribuída
         user.addReservation(res);
 
@@ -80,12 +83,17 @@ public class Manager {
     /**
      * Cria reserva de leilão de um servidor de um tipo.
      *
+     * @param bid Valor positivo diferente de 0.
      * @return Id da reserva.
     */
-    int createAuctionReservation(String email, String serverType, int bid) {
+    int createAuctionReservation(String email, String serverType, int bid) throws IllegalArgumentException, EmailNaoExisteException, Exception {
 
+        if(bid <= 0) throw new IllegalArgumentException();
         ServerType st = servers.get(serverType);
+        if(st == null) throw new Exception(); // TODO: dar nome
         User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
         AuctionReservation res = st.addAuctionRes(user, bid); // espera até ser atribuída
         user.addReservation(res);
 
@@ -95,11 +103,13 @@ public class Manager {
 
     /**
      * Cancela uma reserva
-     *
-     * @param id Id da reserva.
      */
     void cancelReservation(String email, int id) throws Exception {
-        Reservation res = users.get(email).getCurrentRes(id);
+
+        User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
+        Reservation res = user.getCurrentRes(id);
         res.cancel();
     }
 
@@ -111,10 +121,13 @@ public class Manager {
      *
      * @return Dívida total acumulada em cêntimos.
      */
-    int getTotalDue(String email){
+    int getTotalDue(String email) throws EmailNaoExisteException {
+
+        User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
 
         // TODO: concorrencia
-        return users.get(email).getTotalDue();
+        return user.getTotalDue();
     }
 
 }

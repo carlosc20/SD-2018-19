@@ -40,8 +40,6 @@ public class User {
 
     /**
      * Passa uma reserva da lista de atuais para as canceladas.
-     *
-     * @return Reserva que foi cancelada.
      */
     public void cancelRes(Reservation res) {
         currentRes.remove(res.getId());

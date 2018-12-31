@@ -117,9 +117,15 @@ public class MainServer implements Runnable {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                int id = manager.createStandardReservation(user, "t3.micro");
-                                wr.println("Reserva de leilão iniciada com sucesso, id = " + id);
-                                wr.flush();
+                                int id = 0;
+                                try {
+                                    id = manager.createStandardReservation(user, "t3.micro");
+                                    wr.println("Reserva de leilão iniciada com sucesso, id = " + id);
+                                    wr.flush();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    wr.println("Erro");
+                                }
                             }
                         }).start();
                         break;
@@ -128,9 +134,15 @@ public class MainServer implements Runnable {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                int id = manager.createAuctionReservation(user, "t3.micro", 100);
-                                wr.println("Reserva standard iniciada com sucesso, id = " + id);
-                                wr.flush();
+                                int id = 0;
+                                try {
+                                    id = manager.createAuctionReservation(user, "t3.micro", 100);
+                                    wr.println("Reserva standard iniciada com sucesso, id = " + id);
+                                    wr.flush();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    wr.println("Erro" + id);
+                                }
                             }
                         }).start();
                         break;

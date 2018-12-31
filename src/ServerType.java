@@ -37,22 +37,23 @@ public class ServerType {
 
         AuctionReservation res = new AuctionReservation(this, user, bid);
 
-        if(standardRes == total) {                                   // cheio, vai para fila
+        if(standardRes == total) {                                  // cheio, vai para fila
             addToQueue(res);
         } else if (standardRes + auctionRes == total) {             // cheio mas tem reservas de leilao
             AuctionReservation low = auctionResSet.last();
             if(low.getPrice() < res.getPrice()) {                   // se for melhor que a pior reserva de leilao, remove essa
                 low.cancel();
                 auctionRes--;
-            } else {                                                //senao vai para fila
+            } else {                                                // senao vai para fila
                 addToQueue(res);
             }
         }                                                           // else tem servidores livres
 
         // adiciona
+        queue.remove(res);
         res.setStartTime(LocalDateTime.now());
-        auctionResSet.add(res);
         auctionRes++;
+        auctionResSet.add(res);
 
         return res;
     }
@@ -74,6 +75,7 @@ public class ServerType {
         }                                                       // else tem servidores livres
 
         // adiciona
+        queue.remove(res);
         res.setStartTime(LocalDateTime.now());
         standardRes++;
 
