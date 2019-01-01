@@ -101,31 +101,6 @@ public class ServerType {
 
 
     /**
-     *
-     */
-    public synchronized StandardReservation addStandardRes(User user) {
-        System.out.println("inicio");
-        StandardReservation res = new StandardReservation(this, user);
-
-        if(standardRes == total) { // cheio, vai para fila
-            System.out.println("cheio");
-            addToQueue(res);
-        } else if (standardRes + auctionRes == total) {         // cheio mas tem reservas de leilao
-            System.out.println("cheio mas com res de leilao");
-            AuctionReservation low = auctionResSet.last();      // remove com menor licitacao
-            low.cancel();
-            auctionRes--;
-        }                                                       // else tem servidores livres
-
-        // adiciona
-        queue.remove(res);
-        res.setStartTime(LocalDateTime.now());
-        standardRes++;
-        return res;
-    }
-
-
-    /**
      *  Adiciona uma reserva à fila de espera para ser atribuída a um servidor.
      */
     public void addToQueue(Reservation res) {
