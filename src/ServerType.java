@@ -19,6 +19,8 @@ public class ServerType {
     private PriorityQueue<Reservation> queue;   // Fila de espera de reservas
     private ReentrantLock lock;
     private Condition full;
+    private Condition fullinho;
+    private int standardQueue;
 
     public ServerType(int price, int total) {
         this.price = price;
@@ -27,6 +29,8 @@ public class ServerType {
         queue = new PriorityQueue<>();
         lock = new ReentrantLock();
         full = lock.newCondition();
+        fullinho  = lock.newCondition();
+        standardQueue = 0;
     }
 
 
@@ -42,9 +46,11 @@ public class ServerType {
     public StandardReservation addStandardRes(User user) {
         try {
             lock.lock();
+
             StandardReservation res = new StandardReservation(this, user);
 
             if (standardRes == total) {
+                standardQueue++;
                 while (standardRes == total) {                      // cheio, vai para fila
                     try {
                         full.await();
@@ -53,6 +59,7 @@ public class ServerType {
                     }
                     //addToQueue(res);
                 }
+                standardQueue--;
             } else if (standardRes + auctionRes == total) {         // cheio mas tem reservas de leilao
                 System.out.println("cheio mas com res de leilao");
                 AuctionReservation low = auctionResSet.last();      // remove com menor licitacao
@@ -75,28 +82,41 @@ public class ServerType {
      *
      */
     public synchronized AuctionReservation addAuctionRes(User user, int bid) {
+        try {
+            lock.lock();
 
-        AuctionReservation res = new AuctionReservation(this, user, bid);
+            AuctionReservation res = new AuctionReservation(this, user, bid);
 
-        if(standardRes == total) {                                  // cheio, vai para fila
-            addToQueue(res);
-        } else if (standardRes + auctionRes == total) {             // cheio mas tem reservas de leilao
-            AuctionReservation low = auctionResSet.last();
-            if(low.getPrice() < res.getPrice()) {                   // se for melhor que a pior reserva de leilao, remove essa
-                low.cancel();
-                auctionRes--;
-            } else {                                                // senao vai para fila
-                addToQueue(res);
+            if (standardRes == total) {
+                while (standardRes == total && standardQueue != 0) {                      // cheio, vai para fila
+                    try {
+                        fullinho.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        }                                                           // else tem servidores livres
 
-        // adiciona
-        queue.remove(res);
-        res.setStartTime(LocalDateTime.now());
-        auctionRes++;
-        auctionResSet.add(res);
+            if (standardRes + auctionRes == total) {             // cheio mas tem reservas de leilao
+                AuctionReservation low = auctionResSet.last();
+                if (low.getPrice() < res.getPrice()) {                   // se for melhor que a pior reserva de leilao, remove essa
+                    low.cancel();
+                    auctionRes--;
+                } else {                                                // senao vai para fila
+                    addToQueue(res);
+                }
+            }                                                           // else tem servidores livres
 
-        return res;
+            // adiciona
+            queue.remove(res);
+            res.setStartTime(LocalDateTime.now());
+            auctionRes++;
+            auctionResSet.add(res);
+
+            return res;
+        } finally {
+            lock.unlock();
+        }
     }
 
 
@@ -127,6 +147,7 @@ public class ServerType {
             } else {
                 standardRes--;
                 full.signal();
+                if(standardQueue == 0) fullinho.signal();
             }
         } finally {
             lock.unlock();
