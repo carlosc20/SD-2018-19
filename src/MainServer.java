@@ -21,7 +21,7 @@ public class MainServer implements Runnable {
 
     public static void main(String[] args) throws Exception {
 
-        ServerSocket ss = new ServerSocket(1234);
+        ServerSocket ss = new ServerSocket(12345);
         while(true) {
             Socket s = ss.accept();
             new Thread(new MainServer(s)).start();

@@ -13,7 +13,7 @@ public class Client implements Runnable{
 
     public void run() {
         try {
-            Socket s = new Socket("localhost", 1234);
+            Socket s = new Socket("localhost", 12345);
 
             PrintWriter wr = new PrintWriter(s.getOutputStream());
             BufferedReader rd = new BufferedReader(new InputStreamReader(s.getInputStream()));
