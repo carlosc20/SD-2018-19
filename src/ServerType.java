@@ -120,6 +120,12 @@ public class ServerType {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            /*
+            System.out.println("------------------------------------------\nId: " + res.getId() + ", total: " + auctionActiveN);
+            for (AuctionReservation a : auctionQueue) {
+                System.out.println(a.getId() + "-> " + a.getPrice());
+            }
+            */
         } while (standardActiveN + auctionActiveN == total || standardQueueN != 0 || auctionQueue.peek() != res);
         auctionQueue.remove(res);
     }

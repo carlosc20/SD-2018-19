@@ -26,8 +26,8 @@ public class AuctionReservation extends Reservation implements Comparable {
         AuctionReservation that = (AuctionReservation) o;
         int p1 = this.getPrice();
         int p2 = that.getPrice();
-        if(p1 == p2) return Integer.compare(this.getId(), that.getId());
-        return Integer.compare(p2, p1);
+        if(p1 == p2) return Integer.compare(this.getId(), that.getId()); // menor id
+        return Integer.compare(p2, p1);                                  // maior preço
     }
 
     /**
