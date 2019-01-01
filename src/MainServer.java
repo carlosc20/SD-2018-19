@@ -9,8 +9,8 @@ import java.util.Set;
 
 public class MainServer implements Runnable {
 
-    private static Set<String> sessions = new HashSet<>(); // utilizadores atualmente ligados
-    private static Manager manager = Manager.getInstance();
+    private static final Set<String> sessions = new HashSet<>(); // utilizadores atualmente ligados
+    private static final Manager manager = Manager.getInstance();
     private final Socket s;
     private String user;
 
@@ -31,8 +31,10 @@ public class MainServer implements Runnable {
 
     public void run() {
         try {
-            PrintWriter wr = new PrintWriter(s.getOutputStream());
+            PrintWriter wr = new PrintWriter(s.getOutputStream(), true);
             BufferedReader rd = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+            wr.println("Está ligado ao servidor.");
 
             while(true) {
                 String input = rd.readLine();
@@ -53,8 +55,12 @@ public class MainServer implements Runnable {
                                 }
                                 String email = args[0];
                                 String password = args[1];
-                                manager.registerUser(email, password);
-                                wr.println(email + " registado com sucesso.");
+                                try {
+                                    manager.registerUser(email, password);
+                                    wr.println("Utilizador " + email + " registado com sucesso.");
+                                } catch (EmailAlreadyUsedException e) {
+                                    wr.println("Esse email já está a ser usado.");
+                                }
                             }
                             break;
                         case "entrar": {
@@ -70,17 +76,18 @@ public class MainServer implements Runnable {
                                 String email = args[0];
                                 String password = args[1];
                                 if (manager.checkCredentials(email, password)) {
-                                    if(sessions.contains(email)) {
-                                        wr.println("Já existe uma conexão com esse utilizador.");
-                                        break;
+                                    synchronized (sessions) {
+                                        if (sessions.contains(email)) {
+                                            wr.println("Já existe uma conexão com esse utilizador.");
+                                            break;
+                                        }
+                                        sessions.add(email);
                                     }
                                     user = email;
-                                    sessions.add(user);
                                     wr.println(email + " entrou com sucesso.");
-                                    wr.flush();
                                     session(wr, rd);
                                 }
-                                else wr.println("Credenciais incorretas.");
+                                else wr.println("Dados incorretos.");
                             }
                             break;
                         default:
@@ -88,14 +95,14 @@ public class MainServer implements Runnable {
                     }
                 } catch (Exception e) {
                     wr.println("Erro: " + e.getClass().getName() + " " + e.getMessage());
-                } finally {
-                    wr.flush();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            sessions.remove(user);
+            synchronized (sessions) {
+                sessions.remove(user);
+            }
         }
     }
 
@@ -109,19 +116,22 @@ public class MainServer implements Runnable {
             }
             if (input == null) break;
 
-            String[] cmds = input.split(" ", 2);
+            String[] cmds = input.split(" ");
             try {
                 switch (cmds[0].toLowerCase()) {
                     case "standard":
-                        // TODO: recebe tipo de servidor
+                        if(cmds.length < 2) {
+                            wr.println("Argumentos insuficientes, uso: standard <tipo>");
+                            break;
+                        }
+                        String type = cmds[1];
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                int id = 0;
                                 try {
-                                    id = manager.createStandardReservation(user, "t3.micro");
-                                    wr.println("Reserva de leilão iniciada com sucesso, id = " + id);
-                                    wr.flush();
+                                    wr.println("Pedido de reserva standard do tipo " + type + " criado.");
+                                    int id = manager.createStandardReservation(user, type);
+                                    wr.println("Reserva standard do tipo " + type + " iniciada com sucesso, id = " + id);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     wr.println("Erro");
@@ -130,40 +140,49 @@ public class MainServer implements Runnable {
                         }).start();
                         break;
                     case "leilao":
-                        // TODO: recebe tipo de servidor e licitaçao
+                        if(cmds.length < 2) {
+                            wr.println("Argumentos insuficientes, uso: leilao <tipo> <licitação>");
+                            break;
+                        }
+                        type = cmds[1];
+                        int bid = Integer.parseInt(cmds[2]);
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                int id = 0;
                                 try {
-                                    id = manager.createAuctionReservation(user, "t3.micro", 100);
-                                    wr.println("Reserva standard iniciada com sucesso, id = " + id);
-                                    wr.flush();
+                                    wr.println("Pedido de reserva de leilão do tipo " + type + " com licitação "
+                                            + bid + "€ criado.");
+                                    int id = manager.createAuctionReservation(user, type, bid);
+                                    wr.println("Reserva de leilão do tipo " + type
+                                            + "com licitação " + bid +"€ iniciada com sucesso, id = " + id);
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    wr.println("Erro" + id);
+                                    wr.println("Erro");
                                 }
                             }
                         }).start();
                         break;
                     case "divida":
-                        // TODO:
                         int total = manager.getTotalDue(user);
-                        char[] totalS = String.valueOf(total).toCharArray();
-                        wr.println("Dívida total:" + totalS);
-                        wr.flush();
+                        wr.println("Dívida total:" + total + "cêntimos"); // TODO: 01/01/2019 mostrar em euros
                         break;
                     case "cancelar":
-                        // TODO: recebe id da reserva a cancelar
-                        manager.cancelReservation(user, 1);
+                        if(cmds.length < 2) {
+                            wr.println("Argumentos insuficientes, uso: cancelar <id da reserva>");
+                            break;
+                        }
+                        int id = Integer.parseInt(cmds[1]);
+                        try {
+                            manager.cancelReservation(user, id);
+                        } catch (NullPointerException e) {
+                            wr.println("Reserva não existe.");
+                        }
                         break;
                     default:
                         wr.println("Comando não existe.");
                 }
             } catch (Exception e) {
                 wr.println("Erro: " + e.getClass().getName() + " " + e.getMessage());
-            } finally {
-                wr.flush();
             }
         }
     }

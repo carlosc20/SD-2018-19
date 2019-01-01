@@ -37,19 +37,23 @@ public abstract class Reservation implements Comparable {
         return amountDue;
     }
 
-
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
+
     /**
-     * Calcula o montante a pagar associado à reserva tendo em conta como tempo de cancelamento o momento atual.
+     * Calcula o montante a pagar associado à reserva tendo em conta como tempo de cancelamento o tempo passado
+     * como parâmetro.
      * Para obter o montante de uma reserva já cancelada deve ser usado getAmountDue().
+     *
+     * @param time tempo usado para cálculo da dívida
      *
      * @return  Preço em cêntimos.
      */
-    public int getCurrentAmountDue() { // TODO: confirmar
-        long hours = HOURS.between(startTime, LocalDateTime.now());
+    public int getAmountDue(LocalDateTime time) { // TODO: confirmar
+        if(time.isBefore(startTime)) return 0;
+        long hours = HOURS.between(startTime, time);
         long price = this.getPrice();
 
         return toIntExact(hours * price);
@@ -62,7 +66,7 @@ public abstract class Reservation implements Comparable {
     public void cancel() {
         serverType.cancelRes(this);
         user.cancelRes(this);
-        amountDue = getCurrentAmountDue();
+        amountDue = getAmountDue(LocalDateTime.now());
     }
 
 

@@ -1,3 +1,4 @@
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -6,12 +7,12 @@ import static java.lang.Thread.sleep;
 /**
  *  Facade da lógica
  */
-public class Manager {
+public class Manager implements ManagerInterface {
 
     private static Manager ourInstance = new Manager();
 
-    private Map<String, User> users;         // chave email
-    private Map<String, ServerType> servers; // chave id
+    private final Map<String, User> users;         // chave email
+    private final Map<String, ServerType> servers; // chave id
 
 
     private Manager() {
@@ -30,16 +31,18 @@ public class Manager {
 
     /**
      * Regista um utilizador.
+     * Usa o lock do users para impedir registos com o mesmo email.
      *
      * @param email Email do novo utilizador
      * @param password Password do novo utilizador.
      */
-    synchronized void  registerUser(String email, String password) throws EmailJaExisteException {
-
-        if (users.containsKey(email))
-            throw new EmailJaExisteException(email);
-
-        users.put(email, new User(password));
+    public void registerUser(String email, String password) throws EmailAlreadyUsedException {
+        synchronized (users) {
+            if (users.containsKey(email)) {
+                throw new EmailAlreadyUsedException(email);
+            }
+            users.put(email, new User(password));
+        }
     }
 
 
@@ -48,16 +51,12 @@ public class Manager {
      *
      * @return true se as credenciais se verificarem.
      */
-    boolean checkCredentials(String email, String password) throws EmailNaoExisteException {
+    public boolean checkCredentials(String email, String password) {
 
         User user = users.get(email);
-        if (user == null) throw new EmailNaoExisteException(email);
+        if (user == null) return false;
 
-        boolean isValid = false;
-        if (user.getPassword().equals(password))
-            isValid = true;
-
-        return isValid;
+        return user.getPassword().equals(password);
     }
 
 
@@ -66,7 +65,7 @@ public class Manager {
      *
      * @return Id da reserva.
      */
-    int createStandardReservation(String email, String serverType) throws Exception {
+    public int createStandardReservation(String email, String serverType) throws Exception {
 
         ServerType st = servers.get(serverType);
         if(st == null) throw new Exception(); // TODO: dar nome
@@ -86,9 +85,9 @@ public class Manager {
      * @param bid Valor positivo diferente de 0.
      * @return Id da reserva.
     */
-    int createAuctionReservation(String email, String serverType, int bid) throws IllegalArgumentException, EmailNaoExisteException, Exception {
+    public int createAuctionReservation(String email, String serverType, int bid) throws EmailNaoExisteException, Exception {
 
-        if(bid <= 0) throw new IllegalArgumentException();
+        if(bid <= 0) throw new Exception();
         ServerType st = servers.get(serverType);
         if(st == null) throw new Exception(); // TODO: dar nome
         User user = users.get(email);
@@ -103,14 +102,15 @@ public class Manager {
 
     /**
      * Cancela uma reserva
+     *
+     * @throws NullPointerException se não existe reserva com o id fornecido
      */
-    void cancelReservation(String email, int id) throws Exception {
+    public void cancelReservation(String email, int id) throws Exception {
 
         User user = users.get(email);
         if(user == null) throw new  EmailNaoExisteException(email);
 
-        Reservation res = user.getCurrentRes(id);
-        res.cancel();
+        user.getActiveReservation(id).cancel(); //exceçao
     }
 
 
@@ -121,13 +121,11 @@ public class Manager {
      *
      * @return Dívida total acumulada em cêntimos.
      */
-    int getTotalDue(String email) throws EmailNaoExisteException {
+    public int getTotalDue(String email) throws EmailNaoExisteException {
 
         User user = users.get(email);
         if(user == null) throw new  EmailNaoExisteException(email);
 
-        // TODO: concorrencia
         return user.getTotalDue();
     }
-
 }
