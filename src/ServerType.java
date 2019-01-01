@@ -1,6 +1,8 @@
 import java.time.LocalDateTime;
 import java.util.PriorityQueue;
 import java.util.TreeSet;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *  Representa um conjunto de servidores do mesmo tipo
@@ -28,8 +30,6 @@ public class ServerType {
     public int getPrice() {
         return price;
     }
-
-
     /**
      *
      */
