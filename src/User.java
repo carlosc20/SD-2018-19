@@ -7,7 +7,6 @@ public class User {
     private final String password;
     private Map<Integer, Reservation> activeRes;
     private List<Reservation> canceledRes;
-    private ReentrantLock lock;
 
     public User(String password) {
         this.password = password;
@@ -25,15 +24,15 @@ public class User {
      *  @return Total devido em cêntimos.
      */
     synchronized public int getTotalDue() {
-        // TODO: 01/01/2019 conc?
         int total = 0;
         for (Reservation res : canceledRes) {
             total += res.getAmountDue();
         }
 
         LocalDateTime now = LocalDateTime.now();
+        // TODO: 01/01/2019 é preciso concorrencia?
+        /*
         Collection<Reservation> active = activeRes.values();
-        // ???
         synchronized (activeRes) {
             for (Reservation res : active) {
                 res.lock.lock();
@@ -43,7 +42,10 @@ public class User {
             total += res.getAmountDue(now);
             res.lock.unlock();
         }
-
+        */
+        for (Reservation res : activeRes.values()) {
+            total += res.getAmountDue(now);
+        }
         return total;
     }
 
@@ -69,7 +71,6 @@ public class User {
      * Devolve a reserva não cancelada correspondente ao id fornecido.
      */
     public Reservation getActiveReservation(int id) {
-        Reservation res = activeRes.get(id);
-        return res;
+        return  activeRes.get(id);
     }
 }
