@@ -1,5 +1,6 @@
 import java.time.LocalDateTime;
 import java.util.PriorityQueue;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -12,25 +13,29 @@ public class ServerType {
     private final int price;    // Preço fixo por hora
     private final int total;    // Número fixo máximo de instâncias disponíveis
 
-    private TreeSet<AuctionReservation> auctionResSet;
+    private int standardActiveN;    // Número de instâncias ocupadas com reservas standard
+    private int auctionActiveN;     // Número de instâncias ocupadas com reservas de leilão
+    private SortedSet<AuctionReservation> auctionActiveSet; // Reservas de leilão ativas ordenadas por preço > id
 
-    private int standardRes;    // Número de instâncias ocupadas com reservas standard
-    private int auctionRes;     // Número de instâncias ocupadas com reservas de leilão
-    private PriorityQueue<AuctionReservation> queue;   // Fila de espera de reservas
+    private int standardQueueN;
+    private PriorityQueue<AuctionReservation> auctionQueue;   // Fila de espera de reservas
+
     private ReentrantLock lock;
-    private Condition full;
-    private Condition fullinho;
-    private int standardQueue;
+    private Condition fullStandard;
+    private Condition fullAuction;
+
+
+
 
     public ServerType(int price, int total) {
         this.price = price;
         this.total = total;
-        auctionResSet = new TreeSet<>();
-        queue = new PriorityQueue<>();
+        auctionActiveSet = new TreeSet<>();
+        auctionQueue = new PriorityQueue<>();
         lock = new ReentrantLock();
-        full = lock.newCondition();
-        fullinho  = lock.newCondition();
-        standardQueue = 0;
+        fullStandard = lock.newCondition();
+        fullAuction = lock.newCondition();
+        standardQueueN = 0;
     }
 
 
@@ -49,28 +54,27 @@ public class ServerType {
 
             StandardReservation res = new StandardReservation(this, user);
 
-            if (standardRes == total) {
-                standardQueue++;
-                while (standardRes == total) {                      // cheio, vai para fila
+            if (standardActiveN == total) {
+                standardQueueN++;
+                while (standardActiveN == total) {                      // cheio, vai para fila
                     try {
-                        full.await();
+                        fullStandard.await();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     //addToQueue(res);
                 }
-                standardQueue--;
-            } else if (standardRes + auctionRes == total) {         // cheio mas tem reservas de leilao
+                standardQueueN--;
+            } else if (standardActiveN + auctionActiveN == total) {         // cheio mas tem reservas de leilao
                 System.out.println("cheio mas com res de leilao");
-                AuctionReservation low = auctionResSet.last();      // remove com menor licitacao
+                AuctionReservation low = auctionActiveSet.last();      // remove com menor licitacao
                 low.cancel();
-                auctionRes--;
+                auctionActiveN--;
             }                                                       // else tem servidores livres
 
             // adiciona
-            //queue.remove(res);
             res.setStartTime(LocalDateTime.now());
-            standardRes++;
+            standardActiveN++;
             return res;
         } finally {
             lock.unlock();
@@ -87,10 +91,10 @@ public class ServerType {
 
             AuctionReservation res = new AuctionReservation(this, user, bid);
 
-            if (standardRes == total) { // cheio, vai para fila
+            if (standardActiveN == total) { // cheio, vai para fila
                 waitForBest(res);
-            } else if (standardRes + auctionRes == total) {  // cheio mas tem reservas de leilao
-                AuctionReservation low = auctionResSet.last();
+            } else if (standardActiveN + auctionActiveN == total) {  // cheio mas tem reservas de leilao
+                AuctionReservation low = auctionActiveSet.last();
                 if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
                     low.forceCancel();
                 } else {
@@ -99,10 +103,9 @@ public class ServerType {
             }                                                           // else tem servidores livres
 
             // adiciona
-            queue.remove(res);
             res.setStartTime(LocalDateTime.now());
-            auctionRes++;
-            auctionResSet.add(res);
+            auctionActiveN++;
+            auctionActiveSet.add(res);
             return res;
         } finally {
             lock.unlock();
@@ -110,23 +113,23 @@ public class ServerType {
     }
 
     private void waitForBest(AuctionReservation res) {
-        queue.add(res);
+        auctionQueue.add(res);
         do {
             try {
-                fullinho.await();
+                fullAuction.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (standardRes + auctionRes == total || standardQueue != 0 || queue.peek() != res);
+        } while (standardActiveN + auctionActiveN == total || standardQueueN != 0 || auctionQueue.peek() != res);
+        auctionQueue.remove(res);
     }
-
 
 
     public void forceCancelRes(AuctionReservation res) {
         try {
             lock.lock();
-            auctionResSet.remove(res);
-            auctionRes--;
+            auctionActiveSet.remove(res);
+            auctionActiveN--;
         } finally {
             lock.unlock();
         }
@@ -139,13 +142,13 @@ public class ServerType {
         try {
             lock.lock();
             if (res instanceof AuctionReservation) {
-                auctionResSet.remove(res);
-                auctionRes--;
+                auctionActiveSet.remove(res);
+                auctionActiveN--;
             } else {
-                standardRes--;
-                full.signal();
+                standardActiveN--;
+                fullStandard.signal();
             }
-            if(standardQueue == 0) fullinho.signalAll();
+            if(standardQueueN == 0) fullAuction.signalAll();
         } finally {
             lock.unlock();
         }

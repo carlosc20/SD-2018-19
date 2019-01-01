@@ -7,7 +7,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 /**
  *  Representa uma reserva de um servidor
  */
-public abstract class Reservation implements Comparable {
+public abstract class Reservation {
 
     private static int lastId = 1;
     private final int id;
@@ -83,30 +83,5 @@ public abstract class Reservation implements Comparable {
      * @return  Preço em cêntimos.
      */
     public abstract int getPrice();
-
-    @Override
-    public int compareTo(Object o) {
-        final int BEFORE = -1;
-        final int EQUAL = 0;
-        final int AFTER = 1;
-
-        Reservation that = (Reservation) o; // TODO: ??
-
-        if (this == that) return EQUAL;
-
-        if (this instanceof StandardReservation && that instanceof StandardReservation)
-            return Integer.compare(this.getId(), that.getId());
-
-        if(this instanceof StandardReservation)
-            return BEFORE;
-
-        if(that instanceof StandardReservation)
-            return AFTER;
-
-        AuctionReservation o1 = (AuctionReservation) this;
-        AuctionReservation o2 = (AuctionReservation) that;
-
-        return o1.compareTo(o2);
-    } // TODO: melhorar
 }
 

@@ -17,6 +17,10 @@ public class AuctionReservation extends Reservation implements Comparable {
         return bid;
     }
 
+
+    /**
+     *
+     */
     @Override
     public int compareTo(Object o) {
         AuctionReservation that = (AuctionReservation) o;
