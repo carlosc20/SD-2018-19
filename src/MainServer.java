@@ -10,7 +10,7 @@ import java.util.Set;
 public class MainServer implements Runnable {
 
     private static final Set<String> sessions = new HashSet<>(); // utilizadores atualmente ligados
-    private static final Manager manager = Manager.getInstance();
+    private static final ManagerInterface manager = Manager.getInstance();
     private final Socket s;
     private String user;
 
@@ -119,7 +119,7 @@ public class MainServer implements Runnable {
             String[] cmds = input.split(" ");
             try {
                 switch (cmds[0].toLowerCase()) {
-                    case "standard":
+                    case "standard": //---------------------------------------------------------------------------------
                         if(cmds.length < 2) {
                             wr.println("Argumentos insuficientes, uso: standard <tipo>");
                             break;
@@ -132,14 +132,13 @@ public class MainServer implements Runnable {
                                     wr.println("Pedido de reserva standard do tipo " + type + " criado.");
                                     int id = manager.createStandardReservation(user, type);
                                     wr.println("Reserva standard do tipo " + type + " iniciada com sucesso, id = " + id);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    wr.println("Erro");
+                                } catch (ServerTypeDoesntExistException e) {
+                                    wr.println("Tipo de servidor não existe.");
                                 }
                             }
                         }).start();
                         break;
-                    case "leilao":
+                    case "leilao": //-----------------------------------------------------------------------------------
                         if(cmds.length < 2) {
                             wr.println("Argumentos insuficientes, uso: leilao <tipo> <licitação>");
                             break;
@@ -155,18 +154,17 @@ public class MainServer implements Runnable {
                                     int id = manager.createAuctionReservation(user, type, bid);
                                     wr.println("Reserva de leilão do tipo " + type
                                             + "com licitação " + bid +"€ iniciada com sucesso, id = " + id);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    wr.println("Erro");
+                                } catch (ServerTypeDoesntExistException e) {
+                                    wr.println("Tipo de servidor não existe.");
                                 }
                             }
                         }).start();
                         break;
-                    case "divida":
+                    case "divida": //-----------------------------------------------------------------------------------
                         int total = manager.getTotalDue(user);
                         wr.println("Dívida total:" + total + "cêntimos"); // TODO: 01/01/2019 mostrar em euros
                         break;
-                    case "cancelar":
+                    case "cancelar": //---------------------------------------------------------------------------------
                         if(cmds.length < 2) {
                             wr.println("Argumentos insuficientes, uso: cancelar <id da reserva>");
                             break;
@@ -174,7 +172,7 @@ public class MainServer implements Runnable {
                         int id = Integer.parseInt(cmds[1]);
                         try {
                             manager.cancelReservation(user, id);
-                        } catch (Exception e) {
+                        } catch (ReservationDoesntExistException e) {
                             wr.println("Reserva não existe.");
                         }
                         break;
@@ -182,6 +180,7 @@ public class MainServer implements Runnable {
                         wr.println("Comando não existe.");
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 wr.println("Erro: " + e.getClass().getName() + " " + e.getMessage());
             }
         }
