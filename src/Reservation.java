@@ -41,6 +41,13 @@ public abstract class Reservation implements Comparable {
         this.startTime = startTime;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setAmountDue(int amountDue) {
+        this.amountDue = amountDue;
+    }
 
     /**
      * Calcula o montante a pagar associado à reserva tendo em conta como tempo de cancelamento o tempo passado

@@ -16,7 +16,7 @@ public class ServerType {
 
     private int standardRes;    // Número de instâncias ocupadas com reservas standard
     private int auctionRes;     // Número de instâncias ocupadas com reservas de leilão
-    private PriorityQueue<Reservation> queue;   // Fila de espera de reservas
+    private PriorityQueue<AuctionReservation> queue;   // Fila de espera de reservas
     private ReentrantLock lock;
     private Condition full;
     private Condition fullinho;
@@ -90,12 +90,9 @@ public class ServerType {
             if (standardRes == total) { // cheio, vai para fila
                 waitForBest(res);
             } else if (standardRes + auctionRes == total) {  // cheio mas tem reservas de leilao
-                if (standardRes + auctionRes == total) {
-                    AuctionReservation low = auctionResSet.last();
-                    if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
-                        low.cancel();
-                        auctionRes--;
-                    }
+                AuctionReservation low = auctionResSet.last();
+                if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
+                    low.forceCancel();
                 } else {
                     waitForBest(res);
                 }
@@ -106,7 +103,6 @@ public class ServerType {
             res.setStartTime(LocalDateTime.now());
             auctionRes++;
             auctionResSet.add(res);
-
             return res;
         } finally {
             lock.unlock();
@@ -114,36 +110,16 @@ public class ServerType {
     }
 
     private void waitForBest(AuctionReservation res) {
+        queue.add(res);
         do {
             try {
                 fullinho.await();
-                if (standardRes + auctionRes == total) {
-                    AuctionReservation low = auctionResSet.last();
-                    if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
-                        low.cancel();
-                        auctionRes--;
-                    }
-                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (standardRes == total || standardQueue != 0);
+        } while (standardRes + auctionRes == total || standardQueue != 0 || queue.peek() != res);
     }
 
-
-    /**
-     *  Adiciona uma reserva à fila de espera para ser atribuída a um servidor.
-     */
-    public void addToQueue(Reservation res) {
-        queue.add(res);
-        while (standardRes + auctionRes == total && queue.peek() == res) {
-            try {
-                wait();
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
-        }
-    }
 
 
     public void forceCancelRes(AuctionReservation res) {

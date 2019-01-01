@@ -1,3 +1,5 @@
+import java.time.LocalDateTime;
+
 /**
  *  Representa uma reserva em leilão de um servidor, pode ser cancelada pelo utilizador que a criou ou para dar lugar a uma reserva com oferta melhor ou standard.
  */
@@ -24,5 +26,13 @@ public class AuctionReservation extends Reservation implements Comparable {
         return Integer.compare(p1, p2);
     }
 
+    /**
+     * Cancela a reserva guardando o tempo de cancelamento e o montante total a pagar.
+     */
+    public void forceCancel() {
+        this.getServerType().forceCancelRes(this);
+        this.getUser().cancelRes(this);
+        this.setAmountDue(getAmountDue(LocalDateTime.now()));
+    }
 
 }
