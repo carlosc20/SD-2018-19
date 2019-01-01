@@ -81,29 +81,23 @@ public class ServerType {
     /**
      *
      */
-    public synchronized AuctionReservation addAuctionRes(User user, int bid) {
+    public AuctionReservation addAuctionRes(User user, int bid) {
         try {
             lock.lock();
 
             AuctionReservation res = new AuctionReservation(this, user, bid);
 
-            if (standardRes == total) {
-                while (standardRes == total && standardQueue != 0) {                      // cheio, vai para fila
-                    try {
-                        fullinho.await();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+            if (standardRes == total) { // cheio, vai para fila
+                waitForBest(res);
+            } else if (standardRes + auctionRes == total) {  // cheio mas tem reservas de leilao
+                if (standardRes + auctionRes == total) {
+                    AuctionReservation low = auctionResSet.last();
+                    if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
+                        low.cancel();
+                        auctionRes--;
                     }
-                }
-            }
-
-            if (standardRes + auctionRes == total) {             // cheio mas tem reservas de leilao
-                AuctionReservation low = auctionResSet.last();
-                if (low.getPrice() < res.getPrice()) {                   // se for melhor que a pior reserva de leilao, remove essa
-                    low.cancel();
-                    auctionRes--;
-                } else {                                                // senao vai para fila
-                    addToQueue(res);
+                } else {
+                    waitForBest(res);
                 }
             }                                                           // else tem servidores livres
 
@@ -117,6 +111,23 @@ public class ServerType {
         } finally {
             lock.unlock();
         }
+    }
+
+    private void waitForBest(AuctionReservation res) {
+        do {
+            try {
+                fullinho.await();
+                if (standardRes + auctionRes == total) {
+                    AuctionReservation low = auctionResSet.last();
+                    if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
+                        low.cancel();
+                        auctionRes--;
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } while (standardRes == total || standardQueue != 0);
     }
 
 
@@ -135,10 +146,20 @@ public class ServerType {
     }
 
 
+    public void forceCancelRes(AuctionReservation res) {
+        try {
+            lock.lock();
+            auctionResSet.remove(res);
+            auctionRes--;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     /**
      *  Remove a reserva da lista de reservas dos servidores libertando assim uma instância
      */
-    public synchronized void cancelRes(Reservation res) {
+    public void cancelRes(Reservation res) {
         try {
             lock.lock();
             if (res instanceof AuctionReservation) {
@@ -147,11 +168,10 @@ public class ServerType {
             } else {
                 standardRes--;
                 full.signal();
-                if(standardQueue == 0) fullinho.signal();
             }
+            if(standardQueue == 0) fullinho.signalAll();
         } finally {
             lock.unlock();
         }
-        //notifyAll();
     }
 }

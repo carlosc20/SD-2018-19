@@ -139,12 +139,12 @@ public class MainServer implements Runnable {
                         }).start();
                         break;
                     case "leilao": //-----------------------------------------------------------------------------------
-                        if(cmds.length < 2) {
+                        if(cmds.length < 3) {
                             wr.println("Argumentos insuficientes, uso: leilao <tipo> <licitação>");
                             break;
                         }
                         type = cmds[1];
-                        int bid = Integer.parseInt(cmds[2]);
+                        int bid = Integer.parseInt(cmds[2]); // TODO: 01/01/2019 parse
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
