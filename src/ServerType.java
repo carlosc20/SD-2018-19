@@ -37,22 +37,23 @@ public class ServerType {
 
         AuctionReservation res = new AuctionReservation(this, user, bid);
 
-        if(standardRes == total) {                                   // cheio, vai para fila
+        if(standardRes == total) {                                  // cheio, vai para fila
             addToQueue(res);
         } else if (standardRes + auctionRes == total) {             // cheio mas tem reservas de leilao
             AuctionReservation low = auctionResSet.last();
             if(low.getPrice() < res.getPrice()) {                   // se for melhor que a pior reserva de leilao, remove essa
                 low.cancel();
                 auctionRes--;
-            } else {                                                //senao vai para fila
+            } else {                                                // senao vai para fila
                 addToQueue(res);
             }
         }                                                           // else tem servidores livres
 
         // adiciona
+        queue.remove(res);
         res.setStartTime(LocalDateTime.now());
-        auctionResSet.add(res);
         auctionRes++;
+        auctionResSet.add(res);
 
         return res;
     }
@@ -62,21 +63,23 @@ public class ServerType {
      *
      */
     public synchronized StandardReservation addStandardRes(User user) {
-
+        System.out.println("inicio");
         StandardReservation res = new StandardReservation(this, user);
 
-        if(standardRes == total) {                              // cheio, vai para fila
+        if(standardRes == total) { // cheio, vai para fila
+            System.out.println("cheio");
             addToQueue(res);
         } else if (standardRes + auctionRes == total) {         // cheio mas tem reservas de leilao
+            System.out.println("cheio mas com res de leilao");
             AuctionReservation low = auctionResSet.last();      // remove com menor licitacao
             low.cancel();
             auctionRes--;
         }                                                       // else tem servidores livres
 
         // adiciona
+        queue.remove(res);
         res.setStartTime(LocalDateTime.now());
         standardRes++;
-
         return res;
     }
 

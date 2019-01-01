@@ -1,3 +1,4 @@
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -6,15 +7,15 @@ import static java.lang.Thread.sleep;
 /**
  *  Facade da lógica
  */
-public class Manager {
+public class Manager implements ManagerInterface {
 
     private static Manager ourInstance = new Manager();
 
-    private Map<String, User> users;         // chave email
-    private Map<String, ServerType> servers; // chave id
+    private final Map<String, User> users;         // chave email
+    private final Map<String, ServerType> servers; // chave id
 
 
-    public Manager() {
+    private Manager() {
         this.users = new HashMap<>();
         this.servers = new HashMap<>();
         // Exemplo:
@@ -30,16 +31,18 @@ public class Manager {
 
     /**
      * Regista um utilizador.
+     * Usa o lock do users para impedir registos com o mesmo email.
      *
      * @param email Email do novo utilizador
      * @param password Password do novo utilizador.
      */
-    synchronized void  registerUser(String email, String password) throws EmailJaExisteException {
-
-        if (users.containsKey(email))
-            throw new EmailJaExisteException(email);
-
-        users.put(email, new User(password));
+    public void registerUser(String email, String password) throws EmailAlreadyUsedException {
+        synchronized (users) {
+            if (users.containsKey(email)) {
+                throw new EmailAlreadyUsedException(email);
+            }
+            users.put(email, new User(password));
+        }
     }
 
 
@@ -48,16 +51,12 @@ public class Manager {
      *
      * @return true se as credenciais se verificarem.
      */
-    boolean checkCredentials(String email, String password) throws EmailNaoExisteException {
+    public boolean checkCredentials(String email, String password) {
 
         User user = users.get(email);
-        if (user == null) throw new EmailNaoExisteException(email);
+        if (user == null) return false;
 
-        boolean isValid = false;
-        if (user.getPassword().equals(password))
-            isValid = true;
-
-        return isValid;
+        return user.getPassword().equals(password);
     }
 
 
@@ -66,10 +65,13 @@ public class Manager {
      *
      * @return Id da reserva.
      */
-    int createStandardReservation(String email, String serverType) {
+    public int createStandardReservation(String email, String serverType) throws Exception {
 
         ServerType st = servers.get(serverType);
+        if(st == null) throw new Exception(); // TODO: dar nome
         User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
         StandardReservation res = st.addStandardRes(user); // espera até ser atribuída
         user.addReservation(res);
 
@@ -80,12 +82,17 @@ public class Manager {
     /**
      * Cria reserva de leilão de um servidor de um tipo.
      *
+     * @param bid Valor positivo diferente de 0.
      * @return Id da reserva.
     */
-    int createAuctionReservation(String email, String serverType, int bid) {
+    public int createAuctionReservation(String email, String serverType, int bid) throws EmailNaoExisteException, Exception {
 
+        if(bid <= 0) throw new Exception();
         ServerType st = servers.get(serverType);
+        if(st == null) throw new Exception(); // TODO: dar nome
         User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
         AuctionReservation res = st.addAuctionRes(user, bid); // espera até ser atribuída
         user.addReservation(res);
 
@@ -96,11 +103,14 @@ public class Manager {
     /**
      * Cancela uma reserva
      *
-     * @param id Id da reserva.
+     * @throws NullPointerException se não existe reserva com o id fornecido
      */
-    void cancelReservation(String email, int id) throws Exception {
-        Reservation res = users.get(email).getCurrentRes(id);
-        res.cancel();
+    public void cancelReservation(String email, int id) throws Exception {
+
+        User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
+        user.getActiveReservation(id).cancel(); //exceçao
     }
 
 
@@ -111,10 +121,11 @@ public class Manager {
      *
      * @return Dívida total acumulada em cêntimos.
      */
-    int getTotalDue(String email){
+    public int getTotalDue(String email) throws EmailNaoExisteException {
 
-        // TODO: concorrencia
-        return users.get(email).getTotalDue();
+        User user = users.get(email);
+        if(user == null) throw new  EmailNaoExisteException(email);
+
+        return user.getTotalDue();
     }
-
 }
