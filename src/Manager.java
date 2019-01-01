@@ -1,4 +1,3 @@
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,9 +18,9 @@ public class Manager implements ManagerInterface {
         this.users = new HashMap<>();
         this.servers = new HashMap<>();
         // Exemplo:
-        servers.put("t3.micro", new ServerType(300, 5));
-        servers.put("t3.large", new ServerType(600, 3));
-        servers.put("m5.micro", new ServerType(500, 1));
+        servers.put("cinco", new ServerType(300, 5));
+        servers.put("tres", new ServerType(600, 3));
+        servers.put("um", new ServerType(500, 1));
     }
 
     public static Manager getInstance() {
@@ -52,11 +51,8 @@ public class Manager implements ManagerInterface {
      * @return true se as credenciais se verificarem.
      */
     public boolean checkCredentials(String email, String password) {
-
         User user = users.get(email);
-        if (user == null) return false;
-
-        return user.getPassword().equals(password);
+        return (user != null && user.getPassword().equals(password));
     }
 
 
@@ -65,13 +61,12 @@ public class Manager implements ManagerInterface {
      *
      * @return Id da reserva.
      */
-    public int createStandardReservation(String email, String serverType) throws Exception {
+    public int createStandardReservation(String email, String serverType) throws ServerTypeDoesntExistException {
 
         ServerType st = servers.get(serverType);
-        if(st == null) throw new Exception(); // TODO: dar nome
-        User user = users.get(email);
-        if(user == null) throw new  EmailNaoExisteException(email);
+        if(st == null) throw new ServerTypeDoesntExistException();
 
+        User user = users.get(email);
         StandardReservation res = st.addStandardRes(user); // espera até ser atribuída
         user.addReservation(res);
 
@@ -85,14 +80,14 @@ public class Manager implements ManagerInterface {
      * @param bid Valor positivo diferente de 0.
      * @return Id da reserva.
     */
-    public int createAuctionReservation(String email, String serverType, int bid) throws EmailNaoExisteException, Exception {
+    public int createAuctionReservation(String email, String serverType, int bid) throws ServerTypeDoesntExistException {
 
-        if(bid <= 0) throw new Exception();
+        if(bid <= 0) throw new IllegalArgumentException(); // TODO: 01/01/2019 exception?
+
         ServerType st = servers.get(serverType);
-        if(st == null) throw new Exception(); // TODO: dar nome
-        User user = users.get(email);
-        if(user == null) throw new  EmailNaoExisteException(email);
+        if(st == null) throw new ServerTypeDoesntExistException();
 
+        User user = users.get(email);
         AuctionReservation res = st.addAuctionRes(user, bid); // espera até ser atribuída
         user.addReservation(res);
 
@@ -103,14 +98,11 @@ public class Manager implements ManagerInterface {
     /**
      * Cancela uma reserva
      *
-     * @throws NullPointerException se não existe reserva com o id fornecido
      */
-    public void cancelReservation(String email, int id) throws Exception {
-
-        User user = users.get(email);
-        if(user == null) throw new  EmailNaoExisteException(email);
-
-        user.getActiveReservation(id).cancel(); //exceçao
+    public void cancelReservation(String email, int id) throws ReservationDoesntExistException {
+        Reservation res =  users.get(email).getActiveReservation(id);
+        if(res == null) throw new ReservationDoesntExistException();
+        res.cancel();
     }
 
 
@@ -121,11 +113,7 @@ public class Manager implements ManagerInterface {
      *
      * @return Dívida total acumulada em cêntimos.
      */
-    public int getTotalDue(String email) throws EmailNaoExisteException {
-
-        User user = users.get(email);
-        if(user == null) throw new  EmailNaoExisteException(email);
-
-        return user.getTotalDue();
+    public int getTotalDue(String email) {
+        return users.get(email).getTotalDue();
     }
 }

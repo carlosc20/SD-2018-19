@@ -174,7 +174,7 @@ public class MainServer implements Runnable {
                         int id = Integer.parseInt(cmds[1]);
                         try {
                             manager.cancelReservation(user, id);
-                        } catch (NullPointerException e) {
+                        } catch (Exception e) {
                             wr.println("Reserva não existe.");
                         }
                         break;
