@@ -153,7 +153,7 @@ public class MainServer implements Runnable {
                                             + bid + "€ criado.");
                                     int id = manager.createAuctionReservation(user, type, bid);
                                     wr.println("Reserva de leilão do tipo " + type
-                                            + "com licitação " + bid +"€ iniciada com sucesso, id = " + id);
+                                            + " com licitação " + bid +"€ iniciada com sucesso, id = " + id);
                                 } catch (ServerTypeDoesntExistException e) {
                                     wr.println("Tipo de servidor não existe.");
                                 }
