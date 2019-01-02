@@ -10,6 +10,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public abstract class Reservation {
 
     private static int lastId = 1;
+
     private final int id;
     private final ServerType serverType;
     private final User user;

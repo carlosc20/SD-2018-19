@@ -1,4 +1,3 @@
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,8 +32,9 @@ public class Manager implements ManagerInterface {
      * Regista um utilizador.
      * Usa o lock do users para impedir registos com o mesmo email.
      *
-     * @param email Email do novo utilizador
-     * @param password Password do novo utilizador.
+     * @param email email do novo utilizador.
+     * @param password password do novo utilizador.
+     * @throws EmailAlreadyUsedException se o email já existe.
      */
     public void registerUser(String email, String password) throws EmailAlreadyUsedException {
         synchronized (users) {
