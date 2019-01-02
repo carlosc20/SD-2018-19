@@ -48,7 +48,10 @@ public class AuctionReservation extends Reservation implements Comparable {
             @Override
             public void run() {
                 Socket s = MainServer.getSocket(user.getEmail());
-                if(s == null) return; // O utilizador não está conectado
+                if(s == null) {
+                    user.addCanceledAuctionReservation(id);
+                    return; // O utilizador não está conectado
+                }
                 try {
                     PrintWriter wr = new PrintWriter(s.getOutputStream());
                     wr.println("A reserva id=" + id + " foi cancelada");

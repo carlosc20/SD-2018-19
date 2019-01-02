@@ -7,12 +7,14 @@ public class User {
     private final String password;
     private Map<Integer, Reservation> activeRes;
     private List<Reservation> canceledRes;
+    private final List<Integer> canceledAutionRes;
     private String email;
 
     public User(String email, String password) {
         this.password = password;
         this.activeRes = new HashMap<>();
         this.canceledRes = new ArrayList<>();
+        this.canceledAutionRes = new ArrayList<>();
         this.email = email;
     }
 
@@ -83,4 +85,17 @@ public class User {
         return this.email;
     }
 
+    public List<Integer> popCanceledAuctionReservations() {
+        synchronized (this.canceledAutionRes) {
+            List<Integer> list = new ArrayList<>(this.canceledAutionRes);
+            this.canceledAutionRes.clear();
+            return list;
+        }
+    }
+
+    public void addCanceledAuctionReservation(Integer reservationId) {
+        synchronized (this.canceledAutionRes) {
+            this.canceledAutionRes.add(reservationId);
+        }
+    }
 }
