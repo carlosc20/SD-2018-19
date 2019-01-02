@@ -4,12 +4,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainServer implements Runnable {
 
-    private static final Set<String> sessions = new HashSet<>(); // utilizadores atualmente ligados
+    private static final Map<String, Socket> sessions = new HashMap<>(); // utilizadores atualmente ligados
     private static final ManagerInterface manager = Manager.getInstance();
     private final Socket s;
     private String user;
@@ -77,11 +77,11 @@ public class MainServer implements Runnable {
                                 String password = args[1];
                                 if (manager.checkCredentials(email, password)) {
                                     synchronized (sessions) {
-                                        if (sessions.contains(email)) {
+                                        if (sessions.containsKey(email)) {
                                             wr.println("Já existe uma conexão com esse utilizador.");
                                             break;
                                         }
-                                        sessions.add(email);
+                                        sessions.put(email, s);
                                     }
                                     user = email;
                                     wr.println(email + " entrou com sucesso.");
@@ -186,4 +186,9 @@ public class MainServer implements Runnable {
         }
     }
 
+    public static Socket getSocket(String email){
+        synchronized (sessions) {
+            return sessions.get(email);
+        }
+    }
 }

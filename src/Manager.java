@@ -1,3 +1,4 @@
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class Manager implements ManagerInterface {
             if (users.containsKey(email)) {
                 throw new EmailAlreadyUsedException(email);
             }
-            users.put(email, new User(password));
+            users.put(email, new User(email, password));
         }
     }
 

@@ -1,3 +1,4 @@
+import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -6,11 +7,13 @@ public class User {
     private final String password;
     private Map<Integer, Reservation> activeRes;
     private List<Reservation> canceledRes;
+    private String email;
 
-    public User(String password) {
+    public User(String email, String password) {
         this.password = password;
         this.activeRes = new HashMap<>();
         this.canceledRes = new ArrayList<>();
+        this.email = email;
     }
 
     public String getPassword() {
@@ -72,4 +75,12 @@ public class User {
     public Reservation getActiveReservation(int id) {
         return  activeRes.get(id);
     }
+
+    /**
+     * Devolve o e-mail do utilizador
+     */
+    public String getEmail(){
+        return this.email;
+    }
+
 }
