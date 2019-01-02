@@ -85,6 +85,9 @@ public class MainServer implements Runnable {
                                     }
                                     user = email;
                                     wr.println("->" + email + " entrou com sucesso.");
+                                    for (int id:manager.popCanceledAutionRes(email)) {
+                                        wr.println("-> A reserva id=" + id + " foi cancelada");
+                                    }
                                     session(wr, rd);
                                 }
                                 else wr.println("-> Dados incorretos.");
