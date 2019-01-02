@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Thread.sleep;
@@ -70,7 +71,7 @@ public class Manager implements ManagerInterface {
         User user = users.get(email);
         StandardReservation res = st.addStandardRes(user); // espera até ser atribuída
         user.addReservation(res);
-
+        
         return res.getId();
     }
 
@@ -116,5 +117,9 @@ public class Manager implements ManagerInterface {
      */
     public int getTotalDue(String email) {
         return users.get(email).getTotalDue();
+    }
+
+    public List<Integer> popCanceledAutionRes (String user) {
+        return users.get(user).popCanceledAuctionReservations();
     }
 }

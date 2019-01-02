@@ -1,3 +1,5 @@
+import java.util.List;
+
 public interface ManagerInterface {
 
     void  registerUser(String email, String password) throws EmailAlreadyUsedException;
@@ -11,4 +13,6 @@ public interface ManagerInterface {
     void cancelReservation(String email, int id) throws ReservationDoesntExistException;
 
     int getTotalDue(String email);
+
+    List<Integer> popCanceledAutionRes (String user);
 }
