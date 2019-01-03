@@ -85,7 +85,7 @@ public class MainServer implements Runnable {
                                     }
                                     user = email;
                                     wr.println("->" + email + " entrou com sucesso.");
-                                    for (int id:manager.popCanceledAutionRes(email)) {
+                                    for (int id:manager.getCanceledWhileOff(email)) {
                                         wr.println("-> A reserva id=" + id + " foi cancelada");
                                     }
                                     session(wr, rd);

@@ -1,4 +1,3 @@
-import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -35,18 +34,6 @@ public class User {
 
         LocalDateTime now = LocalDateTime.now();
         // TODO: 01/01/2019 é preciso concorrencia?
-        /*
-        Collection<Reservation> active = activeRes.values();
-        synchronized (activeRes) {
-            for (Reservation res : active) {
-                res.lock.lock();
-            }
-        }
-        for (Reservation res : active) {
-            total += res.getAmountDue(now);
-            res.lock.unlock();
-        }
-        */
         for (Reservation res : activeRes.values()) {
             total += res.getAmountDue(now);
         }

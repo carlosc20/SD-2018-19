@@ -14,5 +14,5 @@ public interface ManagerInterface {
 
     int getTotalDue(String email);
 
-    List<Integer> popCanceledAutionRes (String user);
+    List<Integer> getCanceledWhileOff(String user);
 }
