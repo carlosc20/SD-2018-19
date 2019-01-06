@@ -43,8 +43,6 @@ public class ServerType {
         return price;
     }
 
-
-
     /**
      *
      */

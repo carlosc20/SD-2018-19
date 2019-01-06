@@ -137,6 +137,8 @@ public class MainServer implements Runnable {
                                     wr.println("-> Reserva standard do tipo " + type + " iniciada com sucesso, id = " + id);
                                 } catch (ServerTypeDoesntExistException e) {
                                     wr.println("-> Tipo de servidor não existe.");
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace(); // TODO : Meter como queres
                                 }
                             }
                         }).start();
@@ -159,6 +161,8 @@ public class MainServer implements Runnable {
                                             + " com licitação " + bid +"€ iniciada com sucesso, id = " + id);
                                 } catch (ServerTypeDoesntExistException e) {
                                     wr.println("-> Tipo de servidor não existe.");
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace(); //TODO: Meter como queres
                                 }
                             }
                         }).start();
