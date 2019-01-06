@@ -25,7 +25,12 @@ public class ServerType {
     private final Condition fullAuction;
 
 
-
+    /**
+     * Construtor que recebe o preço por hora do tipo de servidor e o número de instâncias disponíveis para reserva.
+     *
+     * @param price o preco por hora de reserva standard.
+     * @param total o número total de instâncias disponíveis para reserva.
+     */
     public ServerType(int price, int total) {
         this.price = price;
         this.total = total;
@@ -46,9 +51,11 @@ public class ServerType {
 
 
     /**
+     * Cria uma reserva standard quando possível que corresponde a um servidor deste tipo.
+     * Usa os métodos
      *
-     * @param user
-     * @return
+     * @param  user o utilizador a que fica associada a reserva.
+     * @return a reserva criada.
      */
     public StandardReservation addStandardRes(User user) {
         try {
@@ -64,7 +71,6 @@ public class ServerType {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    //addToQueue(res);
                 }
                 standardQueueN--;
             } else if (standardActiveN + auctionActiveN == total) {         // cheio mas tem reservas de leilao
@@ -85,10 +91,12 @@ public class ServerType {
 
 
     /**
+     * Cria uma reserva de leilão quando possível que corresponde a um servidor deste tipo.
+     * Usa os métodos
      *
-     * @param user
-     * @param bid
-     * @return
+     * @param  user o utilizador a que fica associada a reserva.
+     * @param  bid a licitação em cêntimos.
+     * @return a reserva criada.
      */
     public AuctionReservation addAuctionRes(User user, int bid) {
         try {
@@ -118,8 +126,10 @@ public class ServerType {
     }
 
     /**
+     * Adiciona uma reserva á fila de espera.
      * Usado em {@link #addStandardRes(User)} e {@link #addAuctionRes(User, int)}.
-     * @param res
+     *
+     * @param res reserva que é adicionada á fila de espera.
      */
     private void waitForBest(AuctionReservation res) {
         auctionQueue.add(res);
@@ -129,12 +139,6 @@ public class ServerType {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            /*
-            System.out.println("------------------------------------------\nId: " + res.getId() + ", total: " + auctionActiveN);
-            for (AuctionReservation a : auctionQueue) {
-                System.out.println(a.getId() + "-> " + a.getPrice());
-            }
-            */
         } while (standardActiveN + auctionActiveN == total || standardQueueN != 0 || auctionQueue.peek() != res);
         auctionQueue.remove(res);
     }
@@ -144,6 +148,8 @@ public class ServerType {
      * Remove a reserva da lista de reservas dos servidores libertando assim uma instância
      * Deve ser usado em vez do {@link #cancelRes(Reservation)} quando a reserva
      * for cancelada para ser substituída por outra.
+     *
+     * @param res a reserva que é cancelada.
      */
     public void forceCancelRes(AuctionReservation res) {
         try {
@@ -155,8 +161,11 @@ public class ServerType {
         }
     }
 
+
     /**
      * Remove a reserva da lista de reservas dos servidores libertando assim uma instância
+     *
+     * @param res reserva que é removida.
      */
     public void cancelRes(Reservation res) {
         try {

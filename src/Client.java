@@ -27,18 +27,19 @@ public class Client {
                                 case "registarSucesso" : System.out.println("-> Utilizador " +  resultado[1] + " registado com sucesso."); break; // Sucesso
                                 case "registarEmailEmUso" : System.out.println("-> Esse email já está a ser usado."); break; // Erro
                                 case "entrarSucesso" : System.out.println("-> O utilizador " + resultado[1] + " entrou com sucesso."); break; // Sucesso
+                                case "reservaCancelada" : System.out.println("-> A encomenda com o id = " + resultado[1] + " foi cancelada."); break; // Mensagem
                                 case "entrarJaExisteConexao" : System.out.println("-> Já existe uma conexão com esse utilizador."); break; // Erro
                                 case "entrarDadosIncorretos" : System.out.println("-> Dados incorretos."); break; // Erro
                                 case "servidorNaoExiste" : System.out.println("-> Tipo de servidor não existe."); break; // Erro
-                                case "standardSucesso" : System.out.println("-> Reserva standard do tipo " + resultado[1] + " iniciada com sucesso\n" +
+                                case "standardSucesso" : System.out.println("-> Reserva standard do tipo " + resultado[1] + " iniciada com sucesso.\n" +
                                                                             "   Id da reserva: " + resultado[2]); break; // Sucesso
                                 case "standardPedido" : System.out.println("-> Pedido de reserva standard do tipo " + resultado[1] + " criado."); break; // Mensagem
-                                case "leilaoSucesso" : System.out.println("-> Reserva de leilão do tipo " + resultado[1] + " com licitação " + (Integer.valueOf(resultado[2]) / 100.0f) +"€ iniciada com sucesso\n" +
+                                case "leilaoSucesso" : System.out.println("-> Reserva de leilão do tipo " + resultado[1] + " com licitação " + (Integer.valueOf(resultado[2]) / 100.0f) +"€ iniciada com sucesso.\n" +
                                                                           "   Id da reserva: " + resultado[3]); break; // Sucesso
                                 case "leilaoPedido" : System.out.println("-> Pedido de reserva de leilão do tipo " + resultado[1] + " com licitação " + (Integer.valueOf(resultado[2]) / 100.0f) + "€ criado."); break; // Mensagem
                                 case "leilaoValorInvalido" : System.out.println("-> O valor da licitação deve ser um número positivo e diferente de 0."); break; // Erro
                                 case "leilaoValorNaoNumerico" : System.out.println("-> O valor da licitação deve ser um número (em cêntimos)."); break; //Erro
-                                case "divida" : System.out.println("-> Dívida total: " + (Integer.valueOf(resultado[1]) / 100.0f) + "€"); break; // Resultado
+                                case "divida" : System.out.println("-> Dívida total: " + (Integer.valueOf(resultado[1]) / 100.0f) + "€."); break; // Resultado
                                 case "cancelarSucesso" : System.out.println("-> Reserva com id = " + resultado[1] + " cancelada."); break; // Sucesso
                                 case "reservaNaoExiste" : System.out.println("-> Reserva não existe."); break; // Erro
                                 case "erro" : System.err.println(str.substring(5)); break; // Erro

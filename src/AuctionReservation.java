@@ -1,8 +1,3 @@
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.time.LocalDateTime;
 
 /**
@@ -27,10 +22,10 @@ public class AuctionReservation extends Reservation implements Comparable<Auctio
     }
 
 
-    // TODO: 06/01/2019 nao aceder ao server
     /**
      * Cancela a reserva guardando o tempo de cancelamento e o montante total a pagar.
      * Deve ser usado em vez do {@link #cancel()} quando a reserva for cancelada para ser substituída por outra.
+     * Notifica o utilizador de que a reserva foi cancelada.
      */
     public void forceCancel() {
         this.getServerType().forceCancelRes(this);
@@ -40,10 +35,16 @@ public class AuctionReservation extends Reservation implements Comparable<Auctio
         MainServer.canceledReservation(user.getEmail(), this.getId());
     }
 
-    // TODO: 06/01/2019
+    /**
+     * Usa os ids como critério de igualdade.
+     */
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        AuctionReservation res = (AuctionReservation) obj;
+        return this.getId() == res.getId();
     }
 
     /**
