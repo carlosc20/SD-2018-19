@@ -1,7 +1,6 @@
 import java.time.LocalDateTime;
-
+import java.time.temporal.ChronoUnit;
 import static java.lang.Math.toIntExact;
-import static java.time.temporal.ChronoUnit.HOURS;
 
 /**
  *  Representa uma reserva de um servidor
@@ -65,9 +64,9 @@ public abstract class Reservation {
      */
     public int getAmountDue(LocalDateTime endTime) {
         if(endTime.isBefore(startTime)) return 0;
-        long hours = HOURS.between(startTime, endTime); // TODO: 06/01/2019 Verificar
+        long seconds = startTime.until(LocalDateTime.now(), ChronoUnit.SECONDS);
         int price = this.getPrice();
-        return toIntExact(hours * price);
+        return toIntExact(seconds * price / 3600);
     }
 
 
