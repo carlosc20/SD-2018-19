@@ -1,4 +1,5 @@
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.Math.toIntExact;
@@ -61,10 +62,9 @@ public abstract class Reservation {
      */
     public int getAmountDue(LocalDateTime time) { // TODO: confirmar
         if(time.isBefore(startTime)) return 0;
-        long hours = HOURS.between(startTime, time);
+        long seconds = startTime.until(LocalDateTime.now(), ChronoUnit.SECONDS);
         long price = this.getPrice();
-
-        return toIntExact(hours * price);
+        return toIntExact(seconds * price/3600);
     }
 
 
