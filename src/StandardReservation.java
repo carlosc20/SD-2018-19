@@ -1,8 +1,5 @@
-import java.time.LocalDateTime;
-
-
 /**
- *  Representa uma reserva standard de um servidor, deve ser apenas cancelada pelo utilizador que a criou.
+ *  Representa uma reserva standard de um servidor.
  */
 public class StandardReservation extends Reservation {
 

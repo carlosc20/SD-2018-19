@@ -14,5 +14,7 @@ public interface ManagerInterface {
 
     int getTotalDue(String email) throws InterruptedException;
 
-    List<Integer> getCanceledWhileOff(String user) throws InterruptedException;
+    List<Integer> popCanceledWhileOff(String user);
+
+    void addCanceledWhileOff(String email, int resId);
 }
