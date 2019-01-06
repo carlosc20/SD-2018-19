@@ -33,17 +33,19 @@ public class User {
      *  @return Total devido em cêntimos.
      */
     public int getTotalDue() {
-        int total = 0;
-        for (Reservation res : canceledRes) {
-            total += res.getAmountDue();
-        }
+        synchronized (canceledRes) {
+                int total = 0;
+                for (Reservation res : canceledRes) {
+                    total += res.getAmountDue();
+                }
 
-        LocalDateTime now = LocalDateTime.now();
+                LocalDateTime now = LocalDateTime.now();
 
-        for (Reservation res : activeRes.values()) {
-            total += res.getAmountDue(now);
+                for (Reservation res : activeRes.values()) {
+                    total += res.getAmountDue(now);
+                }
+                return total;
         }
-        return total;
     }
 
 
@@ -63,8 +65,10 @@ public class User {
      * @param res a reserva a cancelar.
      */
     public void cancelRes(Reservation res) {
-        activeRes.remove(res.getId());
-        canceledRes.add(res);
+        synchronized (canceledRes) {
+            activeRes.remove(res.getId());
+            canceledRes.add(res);
+        }
     }
 
 
