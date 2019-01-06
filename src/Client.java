@@ -19,7 +19,7 @@ public class Client {
                         while (true) {
                             String str = rd.readLine();
                             if (str == null) break;
-                            String resultado[] = str.split(" ");
+                            String[] resultado = str.split(" ");
                             switch (resultado[0]) {
                                 case "ligado" : System.out.println("-> Está ligado ao servidor"); break; // Sucesso
                                 case "comandoNaoExiste" : System.out.println("-> Comando não existe."); break; // Erro
@@ -93,15 +93,6 @@ public class Client {
             });
             read.start();
             write.start();
-            try {
-                System.out.println("Juntar");
-                write.join();
-                System.out.println("Escrever");
-                read.join();
-                System.out.println("Ler");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         } catch (IOException e) {
             System.out.println("Não foi possível estabelecer uma ligação com o servidor");
         }

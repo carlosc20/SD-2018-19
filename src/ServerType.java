@@ -58,14 +58,13 @@ public class ServerType {
      * @return a reserva criada.
      */
     public StandardReservation addStandardRes(User user) {
+        lock.lock();
         try {
-            lock.lock();
-
             StandardReservation res = new StandardReservation(this, user);
 
             if (standardActiveN == total) {
                 standardQueueN++;
-                while (standardActiveN == total) {                      // cheio, vai para fila
+                while (standardActiveN == total) {                  // cheio, vai para fila
                     try {
                         fullStandard.await();
                     } catch (InterruptedException e) {
@@ -73,9 +72,8 @@ public class ServerType {
                     }
                 }
                 standardQueueN--;
-            } else if (standardActiveN + auctionActiveN == total) {         // cheio mas tem reservas de leilao
-                System.out.println("cheio mas com res de leilao");
-                AuctionReservation low = auctionActiveSet.last();      // remove com menor licitacao
+            } else if (standardActiveN + auctionActiveN == total) { // cheio mas tem reservas de leilao
+                AuctionReservation low = auctionActiveSet.last();   // remove com menor licitacao
                 low.cancel();
                 auctionActiveN--;
             }                                                       // else tem servidores livres
@@ -99,21 +97,20 @@ public class ServerType {
      * @return a reserva criada.
      */
     public AuctionReservation addAuctionRes(User user, int bid) throws InterruptedException {
+        lock.lock();
         try {
-            lock.lock();
-
             AuctionReservation res = new AuctionReservation(this, user, bid);
 
-            if (standardActiveN == total) { // cheio, vai para fila
+            if (standardActiveN == total) {                          // cheio, vai para fila
                 waitForBest(res);
             } else if (standardActiveN + auctionActiveN == total) {  // cheio mas tem reservas de leilao
                 AuctionReservation low = auctionActiveSet.last();
-                if (low.getPrice() < res.getPrice()) { // se for melhor que a pior reserva de leilao, remove essa
+                if (low.getPrice() < res.getPrice()) {               // se for melhor que a pior reserva de leilao, remove essa
                     low.forceCancel();
                 } else {
                     waitForBest(res);
                 }
-            }                                                           // else tem servidores livres
+            }                                                        // else tem servidores livres
 
             // adiciona
             res.setStartTime(LocalDateTime.now());
@@ -152,8 +149,8 @@ public class ServerType {
      * @param res a reserva que é cancelada.
      */
     public void forceCancelRes(AuctionReservation res) {
+        lock.lock();
         try {
-            lock.lock();
             auctionActiveSet.remove(res);
             auctionActiveN--;
         } finally {
@@ -168,8 +165,8 @@ public class ServerType {
      * @param res reserva que é removida.
      */
     public void cancelRes(Reservation res) {
+        lock.lock();
         try {
-            lock.lock();
             if (res instanceof AuctionReservation) {
                 auctionActiveSet.remove(res);
                 auctionActiveN--;
