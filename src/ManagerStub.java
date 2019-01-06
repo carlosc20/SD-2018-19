@@ -35,4 +35,9 @@ public class ManagerStub implements ManagerInterface {
     public List<Integer> getCanceledWhileOff(String user) {
         return null;
     }
+
+    @Override
+    public void addCanceledWhileOff(String email, int resId) {
+
+    }
 }

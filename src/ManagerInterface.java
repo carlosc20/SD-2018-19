@@ -15,4 +15,6 @@ public interface ManagerInterface {
     int getTotalDue(String email);
 
     List<Integer> getCanceledWhileOff(String user);
+
+    void addCanceledWhileOff(String email, int resId);
 }

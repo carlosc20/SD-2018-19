@@ -43,7 +43,7 @@ public class MainServer implements Runnable {
                 String[] cmds = input.split(" ",2);
                 try {
                     switch (cmds[0].toLowerCase()) {
-                        case "registar": {
+                        case "registar": { //---------------------------------------------------------------------------
                                 if(cmds.length < 2) {
                                     wr.println("-> Argumentos insuficientes, uso: registar <email> <password>");
                                     break;
@@ -63,7 +63,7 @@ public class MainServer implements Runnable {
                                 }
                             }
                             break;
-                        case "entrar": {
+                        case "entrar": { //-----------------------------------------------------------------------------
                                 if(cmds.length < 2) {
                                     wr.println("-> Argumentos insuficientes, uso: entrar <email> <password>");
                                     break;
@@ -85,8 +85,8 @@ public class MainServer implements Runnable {
                                     }
                                     user = email;
                                     wr.println("->" + email + " entrou com sucesso.");
-                                    for (int id:manager.getCanceledWhileOff(email)) {
-                                        wr.println("-> A reserva id=" + id + " foi cancelada");
+                                    for (int id : manager.getCanceledWhileOff(email)) {
+                                        wr.println("-> A reserva id =" + id + " foi cancelada");
                                     }
                                     session(wr, rd);
                                 }
@@ -143,29 +143,37 @@ public class MainServer implements Runnable {
                         break;
                     case "leilao": //-----------------------------------------------------------------------------------
                         if(cmds.length < 3) {
-                            wr.println("-> Argumentos insuficientes, uso: leilao <tipo> <licitação>");
+                            wr.println("-> Argumentos insuficientes, uso: leilao <tipo> <licitação em cêntimos>");
                             break;
                         }
                         type = cmds[1];
-                        int bid = Integer.parseInt(cmds[2]); // TODO: 01/01/2019 parse
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    wr.println("-> Pedido de reserva de leilão do tipo " + type + " com licitação "
-                                            + bid + "€ criado.");
-                                    int id = manager.createAuctionReservation(user, type, bid);
-                                    wr.println("-> Reserva de leilão do tipo " + type
-                                            + " com licitação " + bid +"€ iniciada com sucesso, id = " + id);
-                                } catch (ServerTypeDoesntExistException e) {
-                                    wr.println("-> Tipo de servidor não existe.");
-                                }
+                        try {
+                            int bid = Integer.parseInt(cmds[2]);
+                            if(bid > 0) {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            wr.println("-> Pedido de reserva de leilão do tipo " + type + " com licitação "
+                                                    + bid + "€ criado.");
+                                            int id = manager.createAuctionReservation(user, type, bid);
+                                            wr.println("-> Reserva de leilão do tipo " + type
+                                                    + " com licitação " + bid + "€ iniciada com sucesso, id = " + id);
+                                        } catch (ServerTypeDoesntExistException e) {
+                                            wr.println("-> Tipo de servidor não existe.");
+                                        }
+                                    }
+                                }).start();
+                            } else {
+                                wr.println("-> O valor da licitação deve ser um número positivo diferente de 0.");
                             }
-                        }).start();
+                        } catch (NumberFormatException e) {
+                            wr.println("-> O valor da licitação deve ser um número (cêntimos).");
+                        }
                         break;
                     case "divida": //-----------------------------------------------------------------------------------
                         int total = manager.getTotalDue(user);
-                        wr.println("-> Dívida total:" + total + "cêntimos"); // TODO: 01/01/2019 mostrar em euros
+                        wr.println("-> Dívida total:" + total/100.0f + "€.");
                         break;
                     case "cancelar": //---------------------------------------------------------------------------------
                         if(cmds.length < 2) {
@@ -190,9 +198,26 @@ public class MainServer implements Runnable {
         }
     }
 
-    public static Socket getSocket(String email){
+    public static void canceledReservation(String email, int resId) {
+        Socket se;
         synchronized (sessions) {
-            return sessions.get(email);
+            se = sessions.get(email);
         }
+        if(se == null) {
+            manager.addCanceledWhileOff(email, resId);
+            return; // O utilizador não está conectado
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PrintWriter wr = new PrintWriter(se.getOutputStream());
+                    wr.println("A reserva id =" + resId + " foi cancelada");
+                    wr.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }
