@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class MainServer implements Runnable {
 
-    private static final Map<String, Socket> sessions = new HashMap<>(); // utilizadores atualmente ligados
+    private static final ReadWriteMap<String, Socket> sessions = new ReadWriteMap<>(); // utilizadores atualmente ligados
     private static final ManagerInterface manager = Manager.getInstance();
     private final Socket s;
     private String user;
@@ -76,12 +76,9 @@ public class MainServer implements Runnable {
                                 String email = args[0];
                                 String password = args[1];
                                 if (manager.checkCredentials(email, password)) {
-                                    synchronized (sessions) {
-                                        if (sessions.containsKey(email)) {
-                                            wr.println("entrarJaExisteConexao");
-                                            break;
-                                        }
-                                        sessions.put(email, s);
+                                    if(sessions.putIfAbsent(email, s) != null) {
+                                        wr.println("entrarJaExisteConexao");
+                                        break;
                                     }
                                     user = email;
                                     wr.println("entrarSucesso " + email);
