@@ -7,14 +7,22 @@ import java.util.Map;
  */
 public class Manager implements ManagerInterface {
 
-    private static Manager ourInstance = new Manager();
+    private static Manager ourInstance;
 
-    private final Map<String, User> users;         // chave email
+    static {
+        try {
+            ourInstance = new Manager();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private final ReadWriteMap<String, User> users;         // chave email
     private final Map<String, ServerType> servers; // chave id
 
 
-    private Manager() {
-        this.users = new HashMap<>();
+    private Manager() throws InterruptedException {
+        this.users = new ReadWriteMap<>(new HashMap<>());
         this.servers = new HashMap<>();
         // Exemplo:
         servers.put("cinco", new ServerType(300, 5));
@@ -35,13 +43,9 @@ public class Manager implements ManagerInterface {
      * @param  password password do novo utilizador.
      * @throws EmailAlreadyUsedException se o email já existe.
      */
-    public void registerUser(String email, String password) throws EmailAlreadyUsedException {
-        synchronized (users) {
-            if (users.containsKey(email)) {
-                throw new EmailAlreadyUsedException(email);
-            }
-            users.put(email, new User(email, password));
-        }
+    public void registerUser(String email, String password) throws EmailAlreadyUsedException, InterruptedException {
+        User u = new User(email, password);
+        users.putIfAbsent(email,u);
     }
 
 
@@ -52,7 +56,7 @@ public class Manager implements ManagerInterface {
      * @param  password a password do utilizador.
      * @return true se o utilizador existir e a password se verificar.
      */
-    public boolean checkCredentials(String email, String password) {
+    public boolean checkCredentials(String email, String password) throws InterruptedException {
         User user = users.get(email);
         return (user != null && user.getPassword().equals(password));
     }
@@ -66,7 +70,7 @@ public class Manager implements ManagerInterface {
      * @return id da reserva criada.
      * @throws ServerTypeDoesntExistException se o tipo de servidor não existir.
      */
-    public int createStandardReservation(String email, String serverType) throws ServerTypeDoesntExistException {
+    public int createStandardReservation(String email, String serverType) throws ServerTypeDoesntExistException, InterruptedException {
 
         ServerType st = servers.get(serverType);
         if(st == null) throw new ServerTypeDoesntExistException();
@@ -88,7 +92,7 @@ public class Manager implements ManagerInterface {
      * @return id da reserva criada.
      * @throws ServerTypeDoesntExistException se o tipo de servidor não existir.
      */
-    public int createAuctionReservation(String email, String serverType, int bid) throws ServerTypeDoesntExistException {
+    public int createAuctionReservation(String email, String serverType, int bid) throws ServerTypeDoesntExistException, InterruptedException {
 
         if(bid <= 0) throw new IllegalArgumentException();
 
@@ -110,7 +114,7 @@ public class Manager implements ManagerInterface {
      * @param  id o id da reserva a cancelar.
      * @throws ReservationDoesntExistException se a reserva não existir ou já estiver cancelada.
      */
-    public void cancelReservation(String email, int id) throws ReservationDoesntExistException {
+    public void cancelReservation(String email, int id) throws ReservationDoesntExistException, InterruptedException {
         Reservation res =  users.get(email).getActiveReservation(id);
         if(res == null) throw new ReservationDoesntExistException();
         res.cancel();
@@ -125,10 +129,9 @@ public class Manager implements ManagerInterface {
      * @param email o email do utilizador.
      * @return Dívida total acumulada em cêntimos.
      */
-    public int getTotalDue(String email) {
+    public int getTotalDue(String email) throws InterruptedException {
         return users.get(email).getTotalDue();
     }
-
 
     /**
      * Devolve uma lista com as reservas canceladas enquanto o utilizador estava desconectado do servidor.
@@ -136,7 +139,7 @@ public class Manager implements ManagerInterface {
      * @param  email o email do utilizador.
      * @return lista com os ids das reservas canceladas.
      */
-    public List<Integer> popCanceledWhileOff(String email) {
+    public List<Integer> popCanceledWhileOff(String email) throws InterruptedException {
         return users.get(email).popCanceledAuctionReservations();
     }
 
@@ -147,7 +150,7 @@ public class Manager implements ManagerInterface {
      * @param email o email do utilizador.
      * @param resId o id da reserva cancelada.
      */
-    public void addCanceledWhileOff(String email, int resId){
+    public void addCanceledWhileOff(String email, int resId) throws InterruptedException {
         users.get(email).addCanceledAuctionReservation(resId);
     }
 }

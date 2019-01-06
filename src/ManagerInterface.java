@@ -2,19 +2,19 @@ import java.util.List;
 
 public interface ManagerInterface {
 
-    void  registerUser(String email, String password) throws EmailAlreadyUsedException;
+    void  registerUser(String email, String password) throws EmailAlreadyUsedException, InterruptedException;
 
-    boolean checkCredentials(String email, String password);
+    boolean checkCredentials(String email, String password) throws InterruptedException;
 
-    int createStandardReservation(String email, String serverType) throws ServerTypeDoesntExistException;
+    int createStandardReservation(String email, String serverType) throws ServerTypeDoesntExistException, InterruptedException;
 
-    int createAuctionReservation(String email, String serverType, int bid) throws  ServerTypeDoesntExistException;
+    int createAuctionReservation(String email, String serverType, int bid) throws ServerTypeDoesntExistException, InterruptedException;
 
-    void cancelReservation(String email, int id) throws ReservationDoesntExistException;
+    void cancelReservation(String email, int id) throws ReservationDoesntExistException, InterruptedException;
 
-    int getTotalDue(String email);
+    int getTotalDue(String email) throws InterruptedException;
 
-    List<Integer> popCanceledWhileOff(String user);
+    List<Integer> popCanceledWhileOff(String user) throws InterruptedException;
 
-    void addCanceledWhileOff(String email, int resId);
+    void addCanceledWhileOff(String email, int resId) throws InterruptedException;
 }

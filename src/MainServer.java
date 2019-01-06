@@ -137,6 +137,8 @@ public class MainServer implements Runnable {
                                     wr.println("standardSucesso " + type + " " + id);
                                 } catch (ServerTypeDoesntExistException e) {
                                     wr.println("servidorNaoExiste");
+                                } catch (InterruptedException e) { //TODO
+                                    e.printStackTrace();
                                 }
                             }
                         }).start();
@@ -159,6 +161,8 @@ public class MainServer implements Runnable {
                                             wr.println("leilaoSucesso " + type + " " + bid + " " + id);
                                         } catch (ServerTypeDoesntExistException e) {
                                             wr.println("servidorNaoExiste");
+                                        } catch (InterruptedException e) { //TODO
+                                            e.printStackTrace();
                                         }
                                     }
                                 }).start();
@@ -198,7 +202,7 @@ public class MainServer implements Runnable {
         }
     }
 
-    public static void canceledReservation(String email, int resId) {
+    public static void canceledReservation(String email, int resId) throws InterruptedException {
         Socket se;
         synchronized (sessions) { se = sessions.get(email); }
         if(se == null) {

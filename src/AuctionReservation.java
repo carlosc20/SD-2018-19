@@ -27,7 +27,7 @@ public class AuctionReservation extends Reservation implements Comparable<Auctio
      * Deve ser usado em vez do {@link #cancel()} quando a reserva for cancelada para ser substituída por outra.
      * Notifica o utilizador de que a reserva foi cancelada.
      */
-    public void forceCancel() {
+    public void forceCancel() throws InterruptedException {
         this.getServerType().forceCancelRes(this);
         User user = this.getUser();
         user.cancelRes(this);
