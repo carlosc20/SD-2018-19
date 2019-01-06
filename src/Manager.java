@@ -36,7 +36,7 @@ public class Manager implements ManagerInterface {
      */
     public void registerUser(String email, String password) throws EmailAlreadyUsedException, InterruptedException {
         User user = new User(email, password);
-        if (users.putIfAbsent(email,user) == null) throw new EmailAlreadyUsedException(email);
+        if (users.putIfAbsent(email,user) != null) throw new EmailAlreadyUsedException(email);
     }
 
 

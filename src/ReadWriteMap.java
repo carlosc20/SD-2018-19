@@ -10,8 +10,7 @@ public class ReadWriteMap<k,v> {
     public v putIfAbsent(k key, v value) throws InterruptedException {
         lock.writeLock();
         try{
-            if(map.containsKey(key)) return null;
-            return map.put(key,value);
+            return map.putIfAbsent(key,value);
         }finally {
             lock.writeUnlock();
         }
