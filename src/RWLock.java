@@ -2,9 +2,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class RWLock {
-    public static int test = 0;
-
-    private static int currentTicket = 0;
+    private static long currentTicket = 0;
 
     private ReentrantLock read = new ReentrantLock();
     private Condition notReading = read.newCondition();
@@ -17,7 +15,7 @@ public class RWLock {
 
     public void readLock() throws InterruptedException {
         try {
-            int id = currentTicket++;
+            long id = currentTicket++;
             read.lock();
             while (id > lastTicket && readIsBlocked){
                 canRead.await();
@@ -43,7 +41,7 @@ public class RWLock {
     }
 
     public void writeLock() throws InterruptedException {
-        int id = currentTicket++;
+        long id = currentTicket++;
 
         read.lock();
         while (id > lastTicket) {
