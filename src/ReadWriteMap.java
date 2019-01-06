@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Map;
 
 public class ReadWriteMap<k,v> {
@@ -7,6 +8,11 @@ public class ReadWriteMap<k,v> {
     public ReadWriteMap(Map<k,v> map)  {
         this.map = map;
     }
+
+    public ReadWriteMap()  {
+        this.map = new HashMap<>();
+    }
+
     public v putIfAbsent(k key, v value) throws InterruptedException {
         lock.writeLock();
         try{
@@ -15,6 +21,7 @@ public class ReadWriteMap<k,v> {
             lock.writeUnlock();
         }
     }
+
     public v put (k key, v value) throws InterruptedException {
         lock.writeLock();
         try{
@@ -23,10 +30,20 @@ public class ReadWriteMap<k,v> {
             lock.writeUnlock();
         }
     }
+
     public boolean remove(k key, v value) throws InterruptedException {
         lock.writeLock();
         try{
             return map.remove(key,value);
+        } finally {
+            lock.writeUnlock();
+        }
+    }
+
+    public v remove(Object key) throws InterruptedException {
+        lock.writeLock();
+        try {
+            return map.remove(key);
         } finally {
             lock.writeUnlock();
         }

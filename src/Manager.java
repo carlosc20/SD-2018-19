@@ -120,7 +120,7 @@ public class Manager implements ManagerInterface {
      * @param email o email do utilizador.
      * @return Dívida total acumulada em cêntimos.
      */
-    public int getTotalDue(String email) throws InterruptedException {
+        public int getTotalDue(String email) throws InterruptedException {
         return users.get(email).getTotalDue();
     }
 

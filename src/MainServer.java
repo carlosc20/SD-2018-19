@@ -100,8 +100,10 @@ public class MainServer implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            synchronized (sessions) {
+            try {
                 sessions.remove(user);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
