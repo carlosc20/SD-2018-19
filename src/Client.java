@@ -42,7 +42,8 @@ public class Client {
                                 case "divida" : System.out.println("-> Dívida total: " + (Integer.valueOf(resultado[1]) / 100.0f) + "€."); break; // Resultado
                                 case "cancelarSucesso" : System.out.println("-> Reserva com id = " + resultado[1] + " cancelada."); break; // Sucesso
                                 case "reservaNaoExiste" : System.out.println("-> Reserva não existe."); break; // Erro
-                                case "erro" : System.err.println(str.substring(5)); break; // Erro
+                                case "numeroNaoValido" : System.out.println("-> O número não é válido."); break; // Erro
+                                case "erro" : System.out.println("-> Algo correu mal"); break; // Erro
                                 default: System.out.println(str);
                             }
                         }

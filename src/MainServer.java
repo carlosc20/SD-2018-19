@@ -178,12 +178,14 @@ public class MainServer implements Runnable {
                             wr.println("argumentosInsuficientes");
                             break;
                         }
-                        int id = Integer.parseInt(cmds[1]);
                         try {
+                            int id = Integer.parseInt(cmds[1]);
                             manager.cancelReservation(user, id);
                             wr.println("cancelarSucesso " + id);
                         } catch (ReservationDoesntExistException e) {
                             wr.println("reservaNaoExiste");
+                        } catch (NumberFormatException e) {
+                            wr.println("numeroNaoValido");
                         }
                         break;
                     default:
@@ -191,7 +193,7 @@ public class MainServer implements Runnable {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                wr.println("erro " + e.getClass().getName() + " " + e.getMessage());
+                wr.println("erro");
             }
         }
     }
