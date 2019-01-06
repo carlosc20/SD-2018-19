@@ -4,13 +4,13 @@ public class ReadWriteMap<k,v> {
     private final Map<k,v> map;
     private final RWLock lock = new RWLock();
 
-    public ReadWriteMap(Map<k,v> map) throws InterruptedException {
+    public ReadWriteMap(Map<k,v> map)  {
         this.map = map;
     }
-    public v putIfAbsent(k key, v value) throws EmailAlreadyUsedException, InterruptedException {
+    public v putIfAbsent(k key, v value) throws InterruptedException {
         lock.writeLock();
         try{
-            if(map.containsKey(key)) throw new EmailAlreadyUsedException((String)key);
+            if(map.containsKey(key)) return null;
             return map.put(key,value);
         }finally {
             lock.writeUnlock();
@@ -32,9 +32,8 @@ public class ReadWriteMap<k,v> {
             lock.writeUnlock();
         }
     }
-    //podem ser adicionados mais métodos
 
-    public v get(Object key) throws InterruptedException {
+    public v get(k key) throws InterruptedException {
         lock.readLock();
         try{
             return map.get(key);

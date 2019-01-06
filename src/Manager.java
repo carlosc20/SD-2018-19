@@ -7,21 +7,12 @@ import java.util.Map;
  */
 public class Manager implements ManagerInterface {
 
-    private static Manager ourInstance;
+    private static Manager ourInstance = new Manager();
 
-    static {
-        try {
-            ourInstance = new Manager();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private final ReadWriteMap<String, User> users;         // chave email
+    private final ReadWriteMap<String, User> users; // chave email
     private final Map<String, ServerType> servers; // chave id
 
-
-    private Manager() throws InterruptedException {
+    private Manager()  {
         this.users = new ReadWriteMap<>(new HashMap<>());
         this.servers = new HashMap<>();
         // Exemplo:
@@ -44,8 +35,8 @@ public class Manager implements ManagerInterface {
      * @throws EmailAlreadyUsedException se o email já existe.
      */
     public void registerUser(String email, String password) throws EmailAlreadyUsedException, InterruptedException {
-        User u = new User(email, password);
-        users.putIfAbsent(email,u);
+        User user = new User(email, password);
+        if (users.putIfAbsent(email,user) == null) throw new EmailAlreadyUsedException(email);
     }
 
 
