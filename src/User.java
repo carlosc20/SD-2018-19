@@ -39,7 +39,7 @@ public class User {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        // TODO: 01/01/2019 é preciso concorrencia?
+
         for (Reservation res : activeRes.values()) {
             total += res.getAmountDue(now);
         }

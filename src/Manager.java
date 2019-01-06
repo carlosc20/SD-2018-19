@@ -136,10 +136,17 @@ public class Manager implements ManagerInterface {
      * @param  email o email do utilizador.
      * @return lista com os ids das reservas canceladas.
      */
-    public List<Integer> getCanceledWhileOff(String email) {
+    public List<Integer> popCanceledWhileOff(String email) {
         return users.get(email).popCanceledAuctionReservations();
     }
 
+
+    /**
+     * Adiciona o id de uma reserva cancelada enquanto o utilizador estava desconectado ao utilizador correspondente.
+     *
+     * @param email o email do utilizador.
+     * @param resId o id da reserva cancelada.
+     */
     public void addCanceledWhileOff(String email, int resId){
         users.get(email).addCanceledAuctionReservation(resId);
     }

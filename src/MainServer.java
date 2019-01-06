@@ -85,7 +85,7 @@ public class MainServer implements Runnable {
                                     }
                                     user = email;
                                     wr.println("->" + email + " entrou com sucesso.");
-                                    for (int id : manager.getCanceledWhileOff(email)) {
+                                    for (int id : manager.popCanceledWhileOff(email)) {
                                         wr.println("-> A reserva id =" + id + " foi cancelada");
                                     }
                                     session(wr, rd);
@@ -200,9 +200,7 @@ public class MainServer implements Runnable {
 
     public static void canceledReservation(String email, int resId) {
         Socket se;
-        synchronized (sessions) {
-            se = sessions.get(email);
-        }
+        synchronized (sessions) { se = sessions.get(email); }
         if(se == null) {
             manager.addCanceledWhileOff(email, resId);
             return; // O utilizador não está conectado
