@@ -31,11 +31,13 @@ public class Client {
                                 case "entrarDadosIncorretos" : System.out.println("-> Dados incorretos."); break; // Erro
                                 case "servidorNaoExiste" : System.out.println("-> Tipo de servidor não existe."); break; // Erro
                                 case "standardSucesso" : System.out.println("-> Reserva standard do tipo " + resultado[1] + " iniciada com sucesso\n" +
-                                                                            "Id da reserva: " + resultado[2]); break; // Sucesso
+                                                                            "   Id da reserva: " + resultado[2]); break; // Sucesso
                                 case "standardPedido" : System.out.println("-> Pedido de reserva standard do tipo " + resultado[1] + " criado."); break; // Mensagem
-                                case "leilaoSucesso" : System.out.println("-> Reserva de leilão do tipo " + resultado[1] + " com licitação " + resultado[2] +"€ iniciada com sucesso\n" +
-                                        "                                   Id da reserva: " + resultado[3]); break; // Sucesso
-                                case "leilaoPedido" : System.out.println("-> Pedido de reserva de leilão do tipo " + resultado[1] + " com licitação " + resultado[2] + "€ criado."); break; // Mensagem
+                                case "leilaoSucesso" : System.out.println("-> Reserva de leilão do tipo " + resultado[1] + " com licitação " + (Integer.valueOf(resultado[2]) / 100.0f) +"€ iniciada com sucesso\n" +
+                                                                          "   Id da reserva: " + resultado[3]); break; // Sucesso
+                                case "leilaoPedido" : System.out.println("-> Pedido de reserva de leilão do tipo " + resultado[1] + " com licitação " + (Integer.valueOf(resultado[2]) / 100.0f) + "€ criado."); break; // Mensagem
+                                case "leilaoValorInvalido" : System.out.println("-> O valor da licitação deve ser um número positivo e diferente de 0."); break; // Erro
+                                case "leilaoValorNaoNumerico" : System.out.println("-> O valor da licitação deve ser um número (em cêntimos)."); break; //Erro
                                 case "divida" : System.out.println("-> Dívida total: " + (Integer.valueOf(resultado[1]) / 100.0f) + "€"); break; // Resultado
                                 case "cancelarSucesso" : System.out.println("-> Reserva com id = " + resultado[1] + " cancelada."); break; // Sucesso
                                 case "reservaNaoExiste" : System.out.println("-> Reserva não existe."); break; // Erro

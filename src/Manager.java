@@ -2,8 +2,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Thread.sleep;
-
 /**
  *  Facade da lógica
  */
@@ -92,7 +90,7 @@ public class Manager implements ManagerInterface {
      */
     public int createAuctionReservation(String email, String serverType, int bid) throws ServerTypeDoesntExistException {
 
-        if(bid <= 0) throw new IllegalArgumentException(); // TODO: 01/01/2019 exception?
+        if(bid <= 0) throw new IllegalArgumentException();
 
         ServerType st = servers.get(serverType);
         if(st == null) throw new ServerTypeDoesntExistException();
@@ -140,5 +138,9 @@ public class Manager implements ManagerInterface {
      */
     public List<Integer> getCanceledWhileOff(String email) {
         return users.get(email).popCanceledAuctionReservations();
+    }
+
+    public void addCanceledWhileOff(String email, int resId){
+        users.get(email).addCanceledAuctionReservation(resId);
     }
 }

@@ -43,7 +43,7 @@ public class MainServer implements Runnable {
                 String[] cmds = input.split(" ",2);
                 try {
                     switch (cmds[0].toLowerCase()) {
-                        case "registar": {
+                        case "registar": { //---------------------------------------------------------------------------
                                 if(cmds.length < 2) {
                                     wr.println("argumentosInsuficientes");
                                     break;
@@ -63,7 +63,7 @@ public class MainServer implements Runnable {
                                 }
                             }
                             break;
-                        case "entrar": {
+                        case "entrar": { //-----------------------------------------------------------------------------
                                 if(cmds.length < 2) {
                                     wr.println("argumentosInsuficientes");
                                     break;
@@ -85,7 +85,7 @@ public class MainServer implements Runnable {
                                     }
                                     user = email;
                                     wr.println("entrarSucesso " + email);
-                                    for (int id:manager.getCanceledWhileOff(email)) {
+                                    for (int id : manager.getCanceledWhileOff(email)) {
                                         wr.println("-> A reserva id=" + id + " foi cancelada");
                                     }
                                     session(wr, rd);
@@ -147,23 +147,31 @@ public class MainServer implements Runnable {
                             break;
                         }
                         type = cmds[1];
-                        int bid = Integer.parseInt(cmds[2]); // TODO: 01/01/2019 parse
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    wr.println("leilaoPedido " + type + " " + bid);
-                                    int id = manager.createAuctionReservation(user, type, bid);
-                                    wr.println("leilaoSucesso " + type + " " + bid + " " + id);
-                                } catch (ServerTypeDoesntExistException e) {
-                                    wr.println("servidorNaoExiste");
-                                }
+                        try {
+                            int bid = Integer.parseInt(cmds[2]);
+                            if(bid > 0) {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            wr.println("leilaoPedido " + type + " " + bid);
+                                            int id = manager.createAuctionReservation(user, type, bid);
+                                            wr.println("leilaoSucesso " + type + " " + bid + " " + id);
+                                        } catch (ServerTypeDoesntExistException e) {
+                                            wr.println("servidorNaoExiste");
+                                        }
+                                    }
+                                }).start();
+                            } else {
+                                wr.println("leilaoValorInvalido");
                             }
-                        }).start();
+                        } catch (NumberFormatException e) {
+                            wr.println("leilaoValorNaoNumerico");
+                        }
                         break;
                     case "divida": //-----------------------------------------------------------------------------------
                         int total = manager.getTotalDue(user);
-                        wr.println("divida " + total); // TODO: 01/01/2019 mostrar em euros
+                        wr.println("divida " + total);
                         break;
                     case "cancelar": //---------------------------------------------------------------------------------
                         if(cmds.length < 2) {
@@ -188,9 +196,26 @@ public class MainServer implements Runnable {
         }
     }
 
-    public static Socket getSocket(String email){
+    public static void canceledReservation(String email, int resId) {
+        Socket se;
         synchronized (sessions) {
-            return sessions.get(email);
+            se = sessions.get(email);
         }
+        if(se == null) {
+            manager.addCanceledWhileOff(email, resId);
+            return; // O utilizador não está conectado
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PrintWriter wr = new PrintWriter(se.getOutputStream());
+                    wr.println("A reserva id =" + resId + " foi cancelada");
+                    wr.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

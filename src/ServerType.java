@@ -10,20 +10,19 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ServerType {
 
-    private final int price;    // Preço fixo por hora
-    private final int total;    // Número fixo máximo de instâncias disponíveis
+    private final int price; // Preço fixo por hora
+    private final int total; // Número fixo máximo de instâncias disponíveis
 
-    private int standardActiveN;    // Número de instâncias ocupadas com reservas standard
-    private int auctionActiveN;     // Número de instâncias ocupadas com reservas de leilão
-    private SortedSet<AuctionReservation> auctionActiveSet; // Reservas de leilão ativas ordenadas por preço > id
+    private int standardActiveN; // Número de instâncias ocupadas com reservas standard
+    private int auctionActiveN;  // Número de instâncias ocupadas com reservas de leilão
+    private final SortedSet<AuctionReservation> auctionActiveSet; // Reservas de leilão ativas ordenadas por preço > id
 
     private int standardQueueN;
-    private PriorityQueue<AuctionReservation> auctionQueue;   // Fila de espera de reservas
+    private final PriorityQueue<AuctionReservation> auctionQueue; // Fila de espera de reservas
 
-    private ReentrantLock lock;
-    private Condition fullStandard;
-    private Condition fullAuction;
-
+    private final ReentrantLock lock;
+    private final Condition fullStandard;
+    private final Condition fullAuction;
 
 
 
@@ -35,6 +34,8 @@ public class ServerType {
         lock = new ReentrantLock();
         fullStandard = lock.newCondition();
         fullAuction = lock.newCondition();
+        standardActiveN = 0;
+        auctionActiveN = 0;
         standardQueueN = 0;
     }
 
@@ -44,9 +45,10 @@ public class ServerType {
     }
 
 
-
     /**
      *
+     * @param user
+     * @return
      */
     public StandardReservation addStandardRes(User user) {
         try {
@@ -84,6 +86,9 @@ public class ServerType {
 
     /**
      *
+     * @param user
+     * @param bid
+     * @return
      */
     public AuctionReservation addAuctionRes(User user, int bid) {
         try {
@@ -112,6 +117,10 @@ public class ServerType {
         }
     }
 
+    /**
+     * Usado em {@link #addStandardRes(User)} e {@link #addAuctionRes(User, int)}.
+     * @param res
+     */
     private void waitForBest(AuctionReservation res) {
         auctionQueue.add(res);
         do {
@@ -131,6 +140,11 @@ public class ServerType {
     }
 
 
+    /**
+     * Remove a reserva da lista de reservas dos servidores libertando assim uma instância
+     * Deve ser usado em vez do {@link #cancelRes(Reservation)} quando a reserva
+     * for cancelada para ser substituída por outra.
+     */
     public void forceCancelRes(AuctionReservation res) {
         try {
             lock.lock();
@@ -142,7 +156,7 @@ public class ServerType {
     }
 
     /**
-     *  Remove a reserva da lista de reservas dos servidores libertando assim uma instância
+     * Remove a reserva da lista de reservas dos servidores libertando assim uma instância
      */
     public void cancelRes(Reservation res) {
         try {
