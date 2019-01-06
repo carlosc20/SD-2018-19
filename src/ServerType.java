@@ -98,7 +98,7 @@ public class ServerType {
      * @param  bid a licitação em cêntimos.
      * @return a reserva criada.
      */
-    public AuctionReservation addAuctionRes(User user, int bid) {
+    public AuctionReservation addAuctionRes(User user, int bid) throws InterruptedException {
         try {
             lock.lock();
 

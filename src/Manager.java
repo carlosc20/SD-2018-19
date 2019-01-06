@@ -133,14 +133,13 @@ public class Manager implements ManagerInterface {
         return users.get(email).getTotalDue();
     }
 
-
     /**
      * Devolve uma lista com as reservas canceladas enquanto o utilizador estava desconectado do servidor.
      *
      * @param  email o email do utilizador.
      * @return lista com os ids das reservas canceladas.
      */
-    public List<Integer> getCanceledWhileOff(String email) throws InterruptedException {
+    public List<Integer> popCanceledWhileOff(String email) throws InterruptedException {
         return users.get(email).popCanceledAuctionReservations();
     }
 
@@ -151,7 +150,7 @@ public class Manager implements ManagerInterface {
      * @param email o email do utilizador.
      * @param resId o id da reserva cancelada.
      */
-    public void addCanceledWhileOff(String email, int resId){
+    public void addCanceledWhileOff(String email, int resId) throws InterruptedException {
         users.get(email).addCanceledAuctionReservation(resId);
     }
 }
